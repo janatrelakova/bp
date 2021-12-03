@@ -3,3 +3,11 @@
     width: 1000px;
     background-color: yellow;
 }
+
+.canvas-container {
+    height: 500px;
+    width: 75%;
+    border: 5px solid black;
+    margin: 0 auto;
+    background-color:lightblue;
+}
