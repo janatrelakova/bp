@@ -1,8 +1,10 @@
-import react, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import react, { ChangeEvent, SyntheticEvent, useEffect, useRef, useState } from 'react';
 import * as y from 'yjs';
 import './YSharedTextField.css';
 import { WebrtcProvider } from 'y-webrtc';
 import { Line } from 'react-lineto';
+import { IndexeddbPersistence } from 'y-indexeddb';
+import { Alert, Snackbar, SnackbarCloseReason } from '@mui/material';
 
 const YSharedTextField = () => {
     const doc = useRef(new y.Doc());
@@ -17,8 +19,18 @@ const YSharedTextField = () => {
         sharedObjects.current.toArray() as number[][] ?? [] as number[][]
     );
 
+    const [open, setOpen] = useState(false);
+
+
     useEffect(() => {
         new WebrtcProvider("shared-page", doc.current);
+
+        const provider = new IndexeddbPersistence("shared-page", doc.current);
+
+        provider.on('synced', () => {
+            console.log('content from the database is loaded');
+            setOpen(true);
+        });
     
         sharedString.current.observeDeep(() => {
           setInputValue(sharedString.current.toArray().toString());
@@ -29,6 +41,23 @@ const YSharedTextField = () => {
         });
 
       }, []);
+
+      const handleToastClose = (event: SyntheticEvent<Element, Event>) => {
+        if (event.type === 'clickaway') {
+          return;
+        }
+    
+        setOpen(false);
+      };
+
+      
+  const handleClose = (event: any, reason: SnackbarCloseReason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
 
     const handleClick = (event: any) => {
@@ -56,6 +85,11 @@ const YSharedTextField = () => {
    
     return (
         <>
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleToastClose} severity="success" sx={{ width: '100%' }}>
+                    This is a success message!
+                </Alert>
+            </Snackbar>
           <h2>Type something:</h2>
           <button onClick={handleClick}>Click me</button>
           <textarea
