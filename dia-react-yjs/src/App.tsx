@@ -1,11 +1,12 @@
 import './App.css';
-import * as Y from 'yjs';
-import YSharedTextField from './Components/YSharedTextField';
+import MainPage from './Components/MainPage/MainPage';
+import SidePanel from './Components/SidePanel/SidePanel';
 
 const App = () => {
   return (
     <div className="App">
-        <YSharedTextField />
+        <SidePanel />
+        <MainPage />
     </div>
   );
 }
