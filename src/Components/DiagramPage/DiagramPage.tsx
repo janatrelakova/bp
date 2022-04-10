@@ -2,7 +2,7 @@ import * as React from 'react';
 import './DiagramPage.css';
 import { useParams } from 'react-router-dom';
 import NotFound from '../NotFound';
-import DiagramComponent from './DiagramComponent';
+import { Diagram } from './Diagram';
 
 type diagramParams = {
     id: string;
@@ -17,7 +17,7 @@ const DiagramPage = () => {
 
     return (
         <div className="diagram-page">
-            <DiagramComponent room={id} />
+            <Diagram room={id} />
         </div>
     );
 }

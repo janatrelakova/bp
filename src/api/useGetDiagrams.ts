@@ -6,8 +6,6 @@ export interface IDiagram {
     room: string,
 }
 
-
-
 export const useGetDiagrams = (id: '5461aa1b-7238-4cc7-bc20-eb5314f490b6') : IDiagram[] => {
     const [initialState, setInitialState] = useState<IDiagram[]>();
 
@@ -15,7 +13,6 @@ export const useGetDiagrams = (id: '5461aa1b-7238-4cc7-bc20-eb5314f490b6') : IDi
         async function getDiagramsByUser(id: string) {
             const request = await fetch(`DiagramsPage/diagrams?userId=${id}`);
             const data = await request.json().catch(() => {});
-            console.log(data);
             setInitialState(data);
         }
         getDiagramsByUser(id);
