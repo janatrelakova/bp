@@ -1,0 +1,6 @@
+.main {
+    background-color: aqua;
+    flex: 10;
+    display: flex;
+    flex-direction: column;
+}
