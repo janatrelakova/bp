@@ -46,14 +46,11 @@ const DiagramCanvas = ({
 
     
     const sharedNodes = useRef(doc.current.getArray('shared-nodes'));
-    const [ nodes, setNodes ] = useState(sharedNodes.current);
 
     useEffect(() => {
         sharedNodes.current.observeDeep(() => {
-            setNodes(sharedNodes.current);
             cy.elements().remove();
             cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
-
         });
 
         cy = cytoscape({
@@ -67,14 +64,19 @@ const DiagramCanvas = ({
         });
 
         cy.addListener('dragfree', 'node', (e) => {
+            console.log("dragfree");
             const node = e.target;
-            const index = node.id() as number;
+            const index = node.id();
+            
+            sharedNodes.current.forEach(console.log);
             const moved = sharedNodes.current.get(index) as NodeDefinition;
             if (moved == null) {
-                return;
+                console.log("moved was null");
             }
-            sharedNodes.current.delete(index);
-            moved.position = {x: node.position.x, y: node.position.y};
+            sharedNodes.current.delete(index as number);
+            console.log(moved.position)
+            moved.position = {x: node.position().x, y: node.position().y} as Position;
+
             sharedNodes.current.insert(index, [moved]);
             cy.elements().remove();
             cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
@@ -85,12 +87,17 @@ const DiagramCanvas = ({
 
 
     const addButtonClick = () => {
-        const addedNode = cyAddNode({
-            cy: cy,
-            id: sharedNodes.current.length.toString(),
-            label: 'ahoj',
 
-        });
+        const addedNode = {
+            data: {
+                id: sharedNodes.current.length.toString(),
+                label: "ahojky",
+                position: {
+                    x: 150,
+                    y: 450,
+                }
+            }
+        };
         sharedNodes.current.push([addedNode]);
         cy.elements().remove();
         cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
