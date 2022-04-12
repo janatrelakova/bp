@@ -1,10 +1,8 @@
 import * as React from 'react';
-import cytoscape, { Core, ElementDefinition, ElementsDefinition, NodeDefinition, Position } from 'cytoscape';
-import { cyAddNode } from '../../utils/functions';
-import { v4 as uuidv4 } from 'uuid';
+import cytoscape, { Core, ElementDefinition, NodeDefinition, Position } from 'cytoscape';
 import * as y from 'yjs';
 import { useRef, useState, useEffect } from 'react';
-import { event } from 'jquery';
+import { v4 as uuidv4 } from 'uuid';
 
 
 var $ = require('jquery');
@@ -20,6 +18,16 @@ contextMenus(cytoscape, $);
 nodeEditing(cytoscape, $, konva);
 
 let cy: Core;
+
+type NodeData = {
+    id: string,
+    label: string | null,
+    position: Position,
+}
+
+type NodeObject = {
+    data: NodeData,
+}
 
 
 
@@ -40,23 +48,37 @@ type DiagramCanvasProps = {
     doc: React.MutableRefObject<y.Doc>
 }
 
+type MapNodesType = {
+    key: string,
+    value: NodeObject;
+}
+
 const DiagramCanvas = ({
     doc
 } : DiagramCanvasProps) => {
 
     
     const sharedNodes = useRef(doc.current.getArray('shared-nodes'));
+    const sharedElements = doc.current.getMap('shared-elements') as y.Map<NodeObject>;
 
     useEffect(() => {
+        /*
         sharedNodes.current.observeDeep(() => {
             cy.elements().remove();
             cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
+        });
+        */
+
+        sharedElements.observeDeep(() => {
+            cy.elements().remove();
+            cy.add(Array.from(sharedElements.values()) as ElementDefinition[]);
+            console.log("reregistered");
         });
 
         cy = cytoscape({
             container: document.getElementById('cy'),
             elements: {
-                nodes: sharedNodes.current.toArray() as NodeDefinition[],
+                nodes: Array.from(sharedElements.values()) as NodeDefinition[],
                 edges: [],
             },
             minZoom: 1.05,
@@ -64,7 +86,7 @@ const DiagramCanvas = ({
         });
 
         cy.addListener('dragfree', 'node', (e) => {
-            console.log("dragfree");
+            /*
             const node = e.target;
             const index = node.id();
             
@@ -74,12 +96,26 @@ const DiagramCanvas = ({
                 console.log("moved was null");
             }
             sharedNodes.current.delete(index as number);
-            console.log(moved.position)
             moved.position = {x: node.position().x, y: node.position().y} as Position;
 
             sharedNodes.current.insert(index, [moved]);
-            cy.elements().remove();
-            cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
+            */
+
+            console.log('dragfree');
+            const node = e.target;
+            const nodeId = node.id();
+            console.log(nodeId);
+            console.log(node.position());
+            sharedElements.set(nodeId, {
+                data: {
+                    id: nodeId,
+                    label: node.label,
+                    position: {
+                        x: 500,
+                        y: 500,
+                    },
+                }
+            })
         })
 
         cy.layout(defaultOptions)
@@ -87,27 +123,22 @@ const DiagramCanvas = ({
 
 
     const addButtonClick = () => {
-
+        const addedNodeId = uuidv4();
         const addedNode = {
             data: {
-                id: sharedNodes.current.length.toString(),
-                label: "ahojky",
+                id: addedNodeId,
+                label: null,
                 position: {
                     x: 150,
                     y: 450,
                 }
             }
         };
-        sharedNodes.current.push([addedNode]);
-        cy.elements().remove();
-        cy.add(sharedNodes.current.toArray() as ElementDefinition[]);
+        sharedElements.set(addedNodeId, addedNode)
     }        
 
     const clearData = () => {
-        sharedNodes.current.forEach(console.log);
-
-        sharedNodes.current.delete(0, sharedNodes.current.length);
-        cy.elements().remove();
+        sharedElements.clear();
     }
 
     return (
