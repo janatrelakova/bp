@@ -2,9 +2,6 @@ import './App.css';
 import DiagramPage from './Components/DiagramPage/DiagramPage';
 import HomePage from './Components/HomePage';
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
-import NotFound from './Components/NotFound';
-
-
 
 const App = () => {
   return (

@@ -1,5 +1,4 @@
-import { Avatar, Grid } from '@mui/material';
-import { deepOrange } from '@mui/material/colors';
+import { Grid } from '@mui/material';
 import * as React from 'react';
 import { IDiagram, useGetDiagrams } from '../../api/useGetDiagrams';
 import DiagramIcon from './Diagram/DiagramIcon';
@@ -17,13 +16,13 @@ const DiagramsGrid = () => {
 
     }
 
-    
-    console.log(i);
     return (
         <div className="diagrid">
             <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
                 {diagrams.map((item, index) => (
-                    <DiagramIcon room={item.room} id={item.room} key={index}/>
+                    <div key={index}>
+                        <DiagramIcon room={item.room} id={item.room} />
+                    </div>
                 ))}
             </Grid>
         </div>

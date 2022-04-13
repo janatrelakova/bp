@@ -1,13 +1,9 @@
-.drawing-area {
-    height: 1000px;
-    width: 1000px;
-    background-color: yellow;
-}
-
-.canvas-container {
-    height: 500px;
-    width: 75%;
-    border: 5px solid black;
-    margin: 0 auto;
-    background-color:lightblue;
+.diagram-page {
+    height: 100vh;
+    width: 100%;
+    background-color: grey;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

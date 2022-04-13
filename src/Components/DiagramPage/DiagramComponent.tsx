@@ -35,9 +35,6 @@ const DiagramComponent = ({room} : DiagramComponentProps) => {
       sharedString.current.toString() ?? ""
     );
 
-    const [width, setWith] = useState("100%");
-    const [height, setHeight] = useState("400px");
-
     //const [i, s] = useGetDiagrams('a');
 
     const sharedObjects = useRef(doc.current.getArray('shared-object'));
@@ -74,8 +71,8 @@ const DiagramComponent = ({room} : DiagramComponentProps) => {
         console.log(dbProvider);
 
         const x = dbProvider._db
-            .then(r => {
-                var response = r.transaction('updates').objectStore('updates').getAll();
+            .then(e => {
+                var response = e.transaction('updates').objectStore('updates').getAll();
                 console.log(response);
                 console.log(response.readyState);
                 response.onsuccess = () => console.log(JSON.stringify(response.result));
