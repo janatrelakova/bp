@@ -5,7 +5,6 @@ import * as y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { WebrtcProvider } from 'y-webrtc';
 import * as awarenessProtocol from 'y-protocols/awareness.js';
-import './Diagram.css';
 import DiagramCanvas from './DiagramCanvas';
 
 type DiagramContainerProps = {
@@ -43,7 +42,7 @@ const DiagramContainer = ({
     }
 
     if (indexedDbPersistence == null) {
-        return <span>Connectioin to indexedDb perseistence is not established.</span>
+        return <span>Connection to indexedDb perseistence is not established.</span>
     }
 
     return <DiagramCanvas doc={doc} />

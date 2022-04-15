@@ -24,13 +24,11 @@ export const cytoscapestyles = [
         style: {
             'shape': 'rectangle',
             'border-color': 'green',
-            'padding': '5 px',
+            'padding': '100 px',
+            'width': 'data(width) px',
+
         }
     },
-
-
-
-
  
     {
         selector: 'edge',
