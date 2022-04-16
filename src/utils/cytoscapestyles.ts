@@ -23,13 +23,19 @@ export const cytoscapestyles = [
         selector: 'node',
         style: {
             'shape': 'rectangle',
-            'border-color': 'green',
-            'padding': '100 px',
-            'width': 'data(width) px',
-
+            'border-color': 'black',
+            'width': 'data(width)',
+            'height': 'data(height)',
+            'padding': '10',
         }
     },
- 
+    {
+        selector: 'node:selected',
+        style: {
+            'border-color': '#1E90FF',
+            'border-width': '3 px',
+        }
+    },
     {
         selector: 'edge',
         style: {
