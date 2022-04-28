@@ -21,7 +21,7 @@ export const cytoscapestyles = [
             'border-color': 'black',
             'width': 'data(width)',
             'height': 'data(height)',
-            'padding': 0,
+            'padding': 20,
         }
     },
     {

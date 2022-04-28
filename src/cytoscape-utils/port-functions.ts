@@ -1,11 +1,12 @@
 import { Position } from "cytoscape";
 import { v4 as uuidv4 } from 'uuid';
-import { NodeData, NodeObject } from "../interfaces/node";
+import { Dimensions, NodeData, NodeObject } from "../interfaces/node";
 import * as y from 'yjs';
 import { PortData } from "../interfaces/port";
 
 export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
     const portId = uuidv4();
+    const targetNodeData = targetNode.data() as NodeData;
     const addedPort = {
         data: {
             id: portId,
@@ -17,6 +18,7 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
                 x: position.x - targetNode.position().x,
                 y: position.y - targetNode.position().y,
             },
+            situatedOn: getPortLocation(position.x, position.y, targetNodeData.dimensions),
         },
         position: {
             x: position.x,
@@ -52,4 +54,39 @@ export const movePorts = (nodePosition: Position, ports: string[], sharedNodes: 
 
         sharedNodes.set(portNode.data.id, portNode);
     }
+};
+
+enum dimensionType {
+    left = 'left',
+    right = 'right',
+    top = 'top',
+    bottom = 'bottom',
+}
+
+const getPortLocation : ((portX: number, portY: number, dimensions: Dimensions) => dimensionType) = (
+    portX: number,
+    portY: number,
+    dimensions: Dimensions,
+) => {
+    const left = Math.abs(dimensions.left - portX);
+    const top = Math.abs(dimensions.top - portY);
+    const right = Math.abs(dimensions.right - portX);
+    const bottom = Math.abs(dimensions.bottom - portY);
+    const minimum = Math.min(left, right, top, bottom);
+    switch (minimum) {
+        case left: {
+            return dimensionType.left;
+        };
+        case right: {
+            return dimensionType.right;
+        };
+        case top: {
+            return dimensionType.top;
+        };
+        case bottom: {
+            return dimensionType.bottom;
+        };
+        default: return dimensionType.right;
+    }
+
 };

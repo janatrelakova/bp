@@ -4,17 +4,17 @@ import * as y from 'yjs';
 
 export const handleRenameNodeApply = (
     setter: ((value: React.SetStateAction<boolean>) => void),
-    affectedNode: null | string,
+    affectedNodeId: null | string,
     sharedNodes: y.Map<NodeObject>,
     namePart1: string,
     namePart2: string,
     ) => {
     setter(false);
-    if (affectedNode === null) {
+    if (affectedNodeId === null) {
         console.log('Something went really wrong.');
         return;
     }
-    const renamed = sharedNodes.get(affectedNode);
+    const renamed = sharedNodes.get(affectedNodeId);
     if (renamed === undefined) {
         console.log('Something went really wrong. --- undefined');
         return;
@@ -26,17 +26,17 @@ export const handleRenameNodeApply = (
 
 export const handleResizeNodeApply = (
     setter: ((value: React.SetStateAction<boolean>) => void),
-    affectedNode: null | string,
+    affectedNodeId: null | string,
     sharedNodes: y.Map<NodeObject>,
     nodeWidth: number,
     nodeHeight: number,
 ) => {
     setter(false);
-    if (affectedNode === null) {
+    if (affectedNodeId === null) {
         console.log('Something went really wrong.');
         return;
     }
-    const resized = sharedNodes.get(affectedNode);
+    const resized = sharedNodes.get(affectedNodeId);
     if (resized === undefined) {
         console.log('Something went really wrong. --- undefined');
         return;
@@ -45,4 +45,9 @@ export const handleResizeNodeApply = (
     resized.data.width = nodeWidth;
     resized.data.height = nodeHeight;
     sharedNodes.set(resized.data.id, resized);
+
+    const trigger = new CustomEvent('resize', {
+        detail: affectedNodeId,
+    })
+    document.dispatchEvent(trigger);
 };

@@ -7,5 +7,6 @@ export type PortData = {
     width: number,
     height: number,
     portOf: NodeObject,
+    situatedOn: 'left' | 'top' | 'right' | 'bottom',
     positionOnNode: Position,
 }

@@ -95,25 +95,20 @@ const DiagramCanvas = ({
                 if (event.target === cy) {
                     addNode(event.position, sharedNodes, nodeWidth, nodeHeight);
                 } else {
-                    console.log('tap on element');
                     addNodeToParent(event.position, event.target, sharedNodes);        
                 }
                 addNodeStatus.current = false;                    
 
             } else if (addPortStatus.current) {
                 if (event.target.isNode) {
-                    console.log(event.target);
 
                     addPort(event.position, event.target, sharedNodes);
-                    console.log(event.target.data().ports);
                     const z = sharedNodes.get(event.target.id())?.data as NodeData;
-                    console.log(z.ports);
                 }
                 addPortStatus.current = false;
             }
-
+            console.log(cy.elements());
         });
-        
     };
 
     useEffect(() => {
@@ -169,8 +164,6 @@ const DiagramCanvas = ({
             const nodeData = movedNode.data as NodeData;
 
             movePorts(movedNode.position, nodeData.ports, sharedNodes);
-
-            console.log('moving ports');
         });
 
         cy.addListener('dragfree', 'node', (e) => {
@@ -190,13 +183,14 @@ const DiagramCanvas = ({
             }
 
             const nodeData = movedNode.data as NodeData;
-
-            console.log('before moving ports')
-
             movedNode.position = node.position();
             movePorts(movedNode.position, nodeData.ports, sharedNodes)
             sharedNodes.set(nodeId, movedNode);
          });
+
+         document.addEventListener("resize", ((event: CustomEvent) => {
+            alert(event.detail);
+         }) as EventListener);
         
     }, []);
 
@@ -354,3 +348,4 @@ const DiagramCanvas = ({
 
 export default DiagramCanvas;
 export {cy};
+export const padding = 20;
