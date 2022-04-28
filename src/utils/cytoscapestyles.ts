@@ -5,18 +5,13 @@ export const cytoscapestyles = [
     {
         selector: 'node[label]',
         style: {
-            'content': 'data(MMRef.label)',
-            'ghost': 'data(MMRef.essence)',
-            'border-style': 'data(MMRef.affiliation)',
+            'content': 'data(label)',
             'border-width': '2px',
             'background-color': 'white',
             'width': '70px',
             'height': '45 px',
             'text-valign': 'center',
             'taxi-direction': 'vertical',
-            'ghost-offset-x': 3,
-            'ghost-offset-y': 3,
-            'ghost-opacity': 0.4,
         }
     },
     {
@@ -26,7 +21,7 @@ export const cytoscapestyles = [
             'border-color': 'black',
             'width': 'data(width)',
             'height': 'data(height)',
-            'padding': '10',
+            'padding': 0,
         }
     },
     {
