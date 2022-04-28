@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { NodeData, NodeObject } from "../interfaces/node";
 import * as y from 'yjs';
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
+import { PortData } from "../interfaces/port";
+import { moveNodePorts } from "./port-functions";
 
 
 export const addNode = (
@@ -105,6 +107,9 @@ export const changeDimensions = (
     affectedNode.data = affectedNodeData;
 
     sharedNodes.set(nodeId, affectedNode);
+    console.log('i');
+    console.log(affectedNodeData.ports);
+    moveNodePorts(affectedNodeData.ports, affectedNode, sharedNodes);
 
     changeDimensions(affectedNodeData.parent, sharedNodes);
 };
@@ -120,28 +125,30 @@ const getChildrenMaxDimensions: ((
     nodeId: string,
     sharedNodes: y.Map<NodeObject>,
 ) => DimensionsType) = (nodeId, sharedNodes) => {
+    const nodeData = sharedNodes.get(nodeId)?.data as NodeData;
+    const previousDimensions = nodeData.dimensions;
     const directChildren: string[] = cy.getElementById(nodeId).children().map(c => c.id());
     const sharedChildren: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
     const children = sharedChildren.filter(c => c !== undefined);
     const left = Math.min(...children.map(n => {
         const nodeData = n?.data as NodeData;
         return nodeData.dimensions.left;
-    }));
+    }), previousDimensions.left);
 
     const right = Math.max(...children.map(n => {
         const nodeData = n?.data as NodeData;
         return nodeData.dimensions.right;
-    }));
+    }), previousDimensions.right);
 
     const bottom = Math.min(...children.map(n => {
         const nodeData = n?.data as NodeData;
         return nodeData.dimensions.bottom;
-    }));
+    }), previousDimensions.bottom);
 
-    const top = Math.min(...children.map(n => {
+    const top = Math.max(...children.map(n => {
         const nodeData = n?.data as NodeData;
         return nodeData.dimensions.top;
-    }));
+    }), previousDimensions.top);
 
     console.log(left, right, top, bottom);
 
@@ -151,4 +158,4 @@ const getChildrenMaxDimensions: ((
         top: top + padding,
         bottom: bottom + padding,
     };
-}
+};

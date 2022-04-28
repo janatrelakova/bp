@@ -8,5 +8,5 @@ export type PortData = {
     height: number,
     portOf: NodeObject,
     situatedOn: 'left' | 'top' | 'right' | 'bottom',
-    positionOnNode: Position,
+    positionOnNode: number,
 }

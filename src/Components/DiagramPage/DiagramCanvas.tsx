@@ -30,7 +30,7 @@ import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
 import { PortData } from '../../interfaces/port';
-import { addNode, addNodeToParent, getNodePorts } from '../../cytoscape-utils/node-functions';
+import { addNode, addNodeToParent, changeDimensions, getNodePorts } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
 import { addPort, movePorts } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
@@ -107,7 +107,6 @@ const DiagramCanvas = ({
                 }
                 addPortStatus.current = false;
             }
-            console.log(cy.elements());
         });
     };
 
@@ -162,8 +161,8 @@ const DiagramCanvas = ({
             }
 
             const nodeData = movedNode.data as NodeData;
-
-            movePorts(movedNode.position, nodeData.ports, sharedNodes);
+            changeDimensions(nodeId, sharedNodes);
+            // movePorts(movedNode.position, nodeData.ports, sharedNodes);
         });
 
         cy.addListener('dragfree', 'node', (e) => {
@@ -189,7 +188,8 @@ const DiagramCanvas = ({
          });
 
          document.addEventListener("resize", ((event: CustomEvent) => {
-            alert(event.detail);
+            //alert(event.detail);
+            changeDimensions(event.detail, sharedNodes);
          }) as EventListener);
         
     }, []);

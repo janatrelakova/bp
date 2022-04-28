@@ -14,10 +14,7 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
             width: 20,
             height: 20,
             portOf: targetNode.id(),
-            positionOnNode: {
-                x: position.x - targetNode.position().x,
-                y: position.y - targetNode.position().y,
-            },
+            positionOnNode: 30,
             situatedOn: getPortLocation(position.x, position.y, targetNodeData.dimensions),
         },
         position: {
@@ -47,12 +44,12 @@ export const movePorts = (nodePosition: Position, ports: string[], sharedNodes: 
         if (portNode === undefined) {
             return undefined;
         }
-        const portData = portNode.data as PortData;
+        //const portData = portNode.data as PortData;
         
-        portNode.position.x = nodePosition.x + portData.positionOnNode.x;
-        portNode.position.y = nodePosition.y + portData.positionOnNode.y;
+        // portNode.position.x = nodePosition.x + portData.positionOnNode.x;
+        //portNode.position.y = nodePosition.y + portData.positionOnNode.y;
 
-        sharedNodes.set(portNode.data.id, portNode);
+        //sharedNodes.set(portNode.data.id, portNode);
     }
 };
 
@@ -90,3 +87,53 @@ const getPortLocation : ((portX: number, portY: number, dimensions: Dimensions) 
     }
 
 };
+
+export const moveNodePorts: ((
+    ports: string[],
+    target: NodeObject,
+    sharedNodes: y.Map<NodeObject>,
+) => void) = (
+    ports, target, sharedNodes
+) => {
+    ports.forEach(portId => {
+        const portNode = sharedNodes.get(portId);
+        if (portNode === undefined) {
+            console.log(`Could not find port with ${portId} id`);
+            return;
+        }
+        const targetData = target.data as NodeData;
+        const portData = portNode.data as PortData;
+        let newx: number;
+        let newy: number;
+        switch (portData.situatedOn) {
+            case 'left': {
+                newx = targetData.dimensions.left;
+                newy = target.position.y + portData.positionOnNode;
+                break;
+            };
+            case 'right': {
+                newx = targetData.dimensions.right;
+                newy = target.position.y + portData.positionOnNode;
+                break;
+            };
+            case 'top': {
+                newy = targetData.dimensions.top;
+                newx = target.position.x + portData.positionOnNode;
+                break;
+            };
+            case 'bottom': {
+                newy = targetData.dimensions.bottom;
+                newx = target.position.x + portData.positionOnNode;
+                break;
+            };
+            default: {
+                newy = 0;
+                newx = 0;
+            };
+        };
+        portNode.position = {x: newx, y: newy} as Position;
+        sharedNodes.set(portId, portNode);
+        console.log(portId, portNode);
+        console.log(portNode.position.x, target.position.x);
+    });
+}
