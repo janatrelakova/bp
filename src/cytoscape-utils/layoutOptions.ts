@@ -8,4 +8,3 @@ export const layoutOptions = {
     edgeElasticity: 0.1,
     nodeRepulsion: 8500,
 };
-  
