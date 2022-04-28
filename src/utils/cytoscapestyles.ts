@@ -5,33 +5,32 @@ export const cytoscapestyles = [
     {
         selector: 'node[label]',
         style: {
-            'content': 'data(MMRef.label)',
-            'ghost': 'data(MMRef.essence)',
-            'border-style': 'data(MMRef.affiliation)',
+            'content': 'data(label)',
             'border-width': '2px',
             'background-color': 'white',
             'width': '70px',
             'height': '45 px',
             'text-valign': 'center',
             'taxi-direction': 'vertical',
-            'ghost-offset-x': 3,
-            'ghost-offset-y': 3,
-            'ghost-opacity': 0.4,
         }
     },
     {
         selector: 'node',
         style: {
             'shape': 'rectangle',
-            'border-color': 'green',
-            'padding': '5 px',
+            'border-color': 'black',
+            'width': 'data(width)',
+            'height': 'data(height)',
+            'padding': 0,
         }
     },
-
-
-
-
- 
+    {
+        selector: 'node:selected',
+        style: {
+            'border-color': '#1E90FF',
+            'border-width': '3 px',
+        }
+    },
     {
         selector: 'edge',
         style: {
