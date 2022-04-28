@@ -2,7 +2,7 @@ import { Position } from "cytoscape";
 import { v4 as uuidv4 } from 'uuid';
 import { NodeData, NodeObject } from "../interfaces/node";
 import * as y from 'yjs';
-import { cy } from "../Components/DiagramPage/DiagramCanvas";
+import { cy } from "../components/DiagramPage/DiagramCanvas";
 
 
 export const addNode = (

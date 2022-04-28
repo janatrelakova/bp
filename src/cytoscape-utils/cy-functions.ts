@@ -1,9 +1,4 @@
 import { Core } from "cytoscape";
-import { MutableRefObject } from "react";
-import { NodeData, NodeObject } from "../interfaces/node";
-import { addNode, addNodeToParent } from "./node-functions";
-import * as y from 'yjs';
-
 
 export const registerContextMenu = (
     cy: Core,

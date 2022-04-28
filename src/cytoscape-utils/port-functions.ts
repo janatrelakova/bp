@@ -40,10 +40,10 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
 };
 
 export const movePorts = (nodePosition: Position, ports: string[], sharedNodes: y.Map<NodeObject>) => {
-    ports.map((port) => {
-        const portNode = sharedNodes.get(port);
+    for (var portId in ports) {
+        const portNode = sharedNodes.get(portId);
         if (portNode === undefined) {
-            return;
+            return undefined;
         }
         const portData = portNode.data as PortData;
         
@@ -51,5 +51,5 @@ export const movePorts = (nodePosition: Position, ports: string[], sharedNodes: 
         portNode.position.y = nodePosition.y + portData.positionOnNode.y;
 
         sharedNodes.set(portNode.data.id, portNode);
-    });
+    }
 };
