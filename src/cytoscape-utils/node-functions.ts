@@ -23,10 +23,10 @@ export const addNode = (
             height: nodeHeight,
             ports: [],
             dimensions: {
-                left: position.x - nodeWidth / 2,
-                top: position.y - nodeHeight / 2,
-                right: position.x + nodeWidth / 2,
-                bottom: position.y + nodeHeight / 2,
+                left: - nodeWidth / 2,
+                top: nodeHeight / 2,
+                right: nodeWidth / 2,
+                bottom: - nodeHeight / 2,
             },
             parent: null,
         },
@@ -53,10 +53,10 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
             height: nodeHeight,
             ports: [],
             dimensions: {
-                left: position.x - nodeWidth / 2,
-                top: position.y - nodeHeight / 2,
-                right: position.x + nodeWidth / 2,
-                bottom: position.y + nodeHeight / 2,
+                left: - nodeWidth / 2,
+                top: nodeHeight / 2,
+                right: nodeWidth / 2,
+                bottom: - nodeHeight / 2,
             },
         },
         position: {
@@ -65,6 +65,7 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
         },                
         type: 'node',
     };
+
     sharedNodes.set(addedNodeId, addedNode);
     changeDimensions(parent.id(), sharedNodes);
 };
@@ -121,41 +122,59 @@ type DimensionsType = {
     bottom: number,
 }
 
-const getChildrenMaxDimensions: ((
+
+export const getChildrenMaxDimensions: ((
     nodeId: string,
     sharedNodes: y.Map<NodeObject>,
 ) => DimensionsType) = (nodeId, sharedNodes) => {
     const nodeData = sharedNodes.get(nodeId)?.data as NodeData;
     const previousDimensions = nodeData.dimensions;
+    const cyNode = cy.getElementById(nodeId);
     const directChildren: string[] = cy.getElementById(nodeId).children().map(c => c.id());
     const sharedChildren: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
     const children = sharedChildren.filter(c => c !== undefined);
     const left = Math.min(...children.map(n => {
-        const nodeData = n?.data as NodeData;
-        return nodeData.dimensions.left;
-    }), previousDimensions.left);
+        if (n === undefined) {
+            return Infinity;
+        }
+        const nodeData = n.data as NodeData;
+        return nodeData.dimensions.left + n.position.x - padding;
+    }), cyNode.position().x + previousDimensions.left);
 
     const right = Math.max(...children.map(n => {
-        const nodeData = n?.data as NodeData;
-        return nodeData.dimensions.right;
-    }), previousDimensions.right);
+        if (n === undefined) {
+            return -Infinity;
+        }
+        const nodeData = n.data as NodeData;
+        return nodeData.dimensions.right + n.position.x + padding;
+    }), previousDimensions.right + cyNode.position().x);
 
     const bottom = Math.min(...children.map(n => {
-        const nodeData = n?.data as NodeData;
-        return nodeData.dimensions.bottom;
-    }), previousDimensions.bottom);
+        if (n === undefined) {
+            return Infinity;
+        }
+        const nodeData = n.data as NodeData;
+        return nodeData.dimensions.bottom + n.position.y - padding;
+    }), previousDimensions.bottom + cyNode.position().y);
 
     const top = Math.max(...children.map(n => {
-        const nodeData = n?.data as NodeData;
-        return nodeData.dimensions.top;
-    }), previousDimensions.top);
+        if (n === undefined) {
+            return -Infinity;
+        }
+        const nodeData = n.data as NodeData;
+        return nodeData.dimensions.top + n.position.y + padding;
+    }), previousDimensions.top + cyNode.position().y);
 
     console.log(left, right, top, bottom);
 
-    return {
-        left: left + padding,
-        right: right + padding,
-        top: top + padding,
-        bottom: bottom + padding,
-    };
+    if (children.length > 0) {
+        return {
+            left: left - cyNode.position().x ,
+            right: right - cyNode.position().x,
+            top: - cyNode.position().y + top,
+            bottom:  -cyNode.position().y + bottom,
+        };        
+    }
+
+    return previousDimensions;
 };

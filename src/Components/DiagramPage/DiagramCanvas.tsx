@@ -29,10 +29,9 @@ import { NodeObject, NodeData } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
-import { PortData } from '../../interfaces/port';
 import { addNode, addNodeToParent, changeDimensions, getNodePorts } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
-import { addPort, movePorts } from '../../cytoscape-utils/port-functions';
+import { addPort } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
 
 var $ = require('jquery');
@@ -165,31 +164,11 @@ const DiagramCanvas = ({
             // movePorts(movedNode.position, nodeData.ports, sharedNodes);
         });
 
-        cy.addListener('dragfree', 'node', (e) => {
-            const node = e.target;
-            const nodeId = node.id();
-
-            const movedNode = sharedNodes.get(nodeId);
-
-            if (movedNode === undefined) {
-                alert("Dragged node is undefined...");
-                return;
-            }
-
-            if (movedNode.type !== 'node') {
-                console.log('would move port');
-                return;
-            }
-
-            const nodeData = movedNode.data as NodeData;
-            movedNode.position = node.position();
-            movePorts(movedNode.position, nodeData.ports, sharedNodes)
-            sharedNodes.set(nodeId, movedNode);
-         });
 
          document.addEventListener("resize", ((event: CustomEvent) => {
             //alert(event.detail);
             changeDimensions(event.detail, sharedNodes);
+            console.log('resize action');
          }) as EventListener);
         
     }, []);

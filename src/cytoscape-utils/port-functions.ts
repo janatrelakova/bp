@@ -6,7 +6,9 @@ import { PortData } from "../interfaces/port";
 
 export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
     const portId = uuidv4();
-    const targetNodeData = targetNode.data() as NodeData;
+    const portLocatedOn = getPortLocation(position.x, position.y, sharedNodes.get(targetNode.id()));
+    let otherCoordinate: number;
+    
     const addedPort = {
         data: {
             id: portId,
@@ -15,7 +17,7 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
             height: 20,
             portOf: targetNode.id(),
             positionOnNode: 30,
-            situatedOn: getPortLocation(position.x, position.y, targetNodeData.dimensions),
+            situatedOn: portLocatedOn,
         },
         position: {
             x: position.x,
@@ -38,21 +40,6 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
     sharedNodes.set(portId, addedPort);
 };
 
-export const movePorts = (nodePosition: Position, ports: string[], sharedNodes: y.Map<NodeObject>) => {
-    for (var portId in ports) {
-        const portNode = sharedNodes.get(portId);
-        if (portNode === undefined) {
-            return undefined;
-        }
-        //const portData = portNode.data as PortData;
-        
-        // portNode.position.x = nodePosition.x + portData.positionOnNode.x;
-        //portNode.position.y = nodePosition.y + portData.positionOnNode.y;
-
-        //sharedNodes.set(portNode.data.id, portNode);
-    }
-};
-
 enum dimensionType {
     left = 'left',
     right = 'right',
@@ -60,15 +47,21 @@ enum dimensionType {
     bottom = 'bottom',
 }
 
-const getPortLocation : ((portX: number, portY: number, dimensions: Dimensions) => dimensionType) = (
+const getPortLocation : ((portX: number, portY: number, targetNode: any) => dimensionType) = (
     portX: number,
     portY: number,
-    dimensions: Dimensions,
+    targetNode: NodeObject | undefined,
 ) => {
-    const left = Math.abs(dimensions.left - portX);
-    const top = Math.abs(dimensions.top - portY);
-    const right = Math.abs(dimensions.right - portX);
-    const bottom = Math.abs(dimensions.bottom - portY);
+    if (targetNode === undefined) {
+        console.log('Target was undefined.');
+        return dimensionType.bottom;
+    }
+    const nodeData = targetNode.data as NodeData;
+    const dimensions = nodeData.dimensions;
+    const left = Math.abs(dimensions.left - portX + targetNode.position.x);
+    const top = Math.abs(dimensions.top - portY +  + targetNode.position.y);
+    const right = Math.abs(dimensions.right - portX + targetNode.position.x);
+    const bottom = Math.abs(dimensions.bottom - portY + targetNode.position.y);
     const minimum = Math.min(left, right, top, bottom);
     switch (minimum) {
         case left: {
@@ -107,23 +100,24 @@ export const moveNodePorts: ((
         let newy: number;
         switch (portData.situatedOn) {
             case 'left': {
-                newx = targetData.dimensions.left;
-                newy = target.position.y + portData.positionOnNode;
+                newx = targetData.dimensions.left  + target.position.x;
+                newy = target.position.y;
                 break;
             };
             case 'right': {
-                newx = targetData.dimensions.right;
-                newy = target.position.y + portData.positionOnNode;
+                console.log(portData.situatedOn, targetData.dimensions.right, target.position.x)
+                newx = targetData.dimensions.right  + target.position.x;
+                newy = target.position.y;
                 break;
             };
             case 'top': {
-                newy = targetData.dimensions.top;
-                newx = target.position.x + portData.positionOnNode;
+                newy = targetData.dimensions.top + target.position.y;
+                newx = target.position.x;
                 break;
             };
             case 'bottom': {
-                newy = targetData.dimensions.bottom;
-                newx = target.position.x + portData.positionOnNode;
+                newy = targetData.dimensions.bottom + target.position.y;
+                newx = target.position.x;
                 break;
             };
             default: {
@@ -133,7 +127,5 @@ export const moveNodePorts: ((
         };
         portNode.position = {x: newx, y: newy} as Position;
         sharedNodes.set(portId, portNode);
-        console.log(portId, portNode);
-        console.log(portNode.position.x, target.position.x);
     });
 }

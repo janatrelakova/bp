@@ -1,5 +1,6 @@
-import { NodeObject } from "../interfaces/node";
+import { NodeData, NodeObject } from "../interfaces/node";
 import * as y from 'yjs';
+import { changeDimensions, getChildrenMaxDimensions } from "../cytoscape-utils/node-functions";
 
 
 export const handleRenameNodeApply = (
@@ -41,13 +42,14 @@ export const handleResizeNodeApply = (
         console.log('Something went really wrong. --- undefined');
         return;
     }
+    const resizedData = resized.data as NodeData;
+    resizedData.width = nodeWidth;
+    resizedData.height = nodeHeight;
+    resizedData.dimensions = getChildrenMaxDimensions(affectedNodeId, sharedNodes);
 
-    resized.data.width = nodeWidth;
-    resized.data.height = nodeHeight;
+    resized.data = resizedData;
+    
     sharedNodes.set(resized.data.id, resized);
 
-    const trigger = new CustomEvent('resize', {
-        detail: affectedNodeId,
-    })
-    document.dispatchEvent(trigger);
+    changeDimensions(affectedNodeId, sharedNodes);
 };
