@@ -1,9 +1,8 @@
 import { Position } from "cytoscape";
 import { v4 as uuidv4 } from 'uuid';
-import { NodeData, NodeObject } from "../interfaces/node";
+import { NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
-import { PortData } from "../interfaces/port";
 import { moveNodePorts } from "./port-functions";
 
 
@@ -18,7 +17,7 @@ export const addNode = (
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: 'ahoj',
+            label: 'parent',
             width: nodeWidth,
             height: nodeHeight,
             ports: [],
@@ -29,12 +28,12 @@ export const addNode = (
                 bottom: - nodeHeight / 2,
             },
             parent: null,
+            type: NodeType.node,
         },
         position: {
             x: position.x,
             y: position.y,
         },
-        type: 'node',
     };
     sharedNodes.set(addedNodeId, addedNode);
 };
@@ -47,7 +46,7 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: 'ahoj',
+            label: 'child',
             parent: parent.id(),
             width: nodeWidth,
             height: nodeHeight,
@@ -58,35 +57,16 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
                 right: nodeWidth / 2,
                 bottom: - nodeHeight / 2,
             },
+            type: NodeType.node,
         },
         position: {
             x: position.x,
             y: position.y,
         },                
-        type: 'node',
     };
 
     sharedNodes.set(addedNodeId, addedNode);
     changeDimensions(parent.id(), sharedNodes);
-};
-
-export const getNodePorts = (node: string, sharedNodes: y.Map<NodeObject>) => {
-    const movedNode = sharedNodes.get(node);
-    if (movedNode === undefined) {
-        console.log('Moved node has not been found in shared nodes.');
-        return;
-    }
-    console.log(movedNode);
-    const nodeData = movedNode.data as NodeData;
-    console.log(nodeData);
-
-    const portIds: string[] = nodeData.ports.map(p => '#' + p);
-    console.log(portIds);
-
-    const portsString = portIds.toString();
-    const result = cy.$(portsString);
-    console.log(result);
-    return result;
 };
 
 export const changeDimensions = (
@@ -108,7 +88,6 @@ export const changeDimensions = (
     affectedNode.data = affectedNodeData;
 
     sharedNodes.set(nodeId, affectedNode);
-    console.log('i');
     console.log(affectedNodeData.ports);
     moveNodePorts(affectedNodeData.ports, affectedNode, sharedNodes);
 
@@ -139,7 +118,7 @@ export const getChildrenMaxDimensions: ((
         }
         const nodeData = n.data as NodeData;
         return nodeData.dimensions.left + n.position.x - padding;
-    }), cyNode.position().x + previousDimensions.left);
+    }));
 
     const right = Math.max(...children.map(n => {
         if (n === undefined) {
@@ -147,7 +126,7 @@ export const getChildrenMaxDimensions: ((
         }
         const nodeData = n.data as NodeData;
         return nodeData.dimensions.right + n.position.x + padding;
-    }), previousDimensions.right + cyNode.position().x);
+    }));
 
     const bottom = Math.min(...children.map(n => {
         if (n === undefined) {
@@ -155,7 +134,7 @@ export const getChildrenMaxDimensions: ((
         }
         const nodeData = n.data as NodeData;
         return nodeData.dimensions.bottom + n.position.y - padding;
-    }), previousDimensions.bottom + cyNode.position().y);
+    }));
 
     const top = Math.max(...children.map(n => {
         if (n === undefined) {
@@ -163,7 +142,7 @@ export const getChildrenMaxDimensions: ((
         }
         const nodeData = n.data as NodeData;
         return nodeData.dimensions.top + n.position.y + padding;
-    }), previousDimensions.top + cyNode.position().y);
+    }));
 
     console.log(left, right, top, bottom);
 

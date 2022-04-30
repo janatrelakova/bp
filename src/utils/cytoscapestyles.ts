@@ -21,7 +21,17 @@ export const cytoscapestyles = [
             'border-color': 'black',
             'width': 'data(width)',
             'height': 'data(height)',
-            'padding': 20,
+            'padding': 30,
+        }
+    },
+    {
+        selector: 'node[type = "portLabel"]',
+        style: {
+            'shape': 'rectangle',
+            'border-color': 'white',
+            'width': 'data(width)',
+            'height': 'data(height)',
+            'padding': 30,
         }
     },
     {
