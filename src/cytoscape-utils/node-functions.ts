@@ -84,7 +84,6 @@ export const changeDimensions = (
     affectedNode.data = affectedNodeData;
 
     sharedNodes.set(nodeId, affectedNode);
-    console.log(affectedNodeData.ports);
     moveNodePorts(affectedNodeData.ports, affectedNode, sharedNodes);
 
     changeDimensions(affectedNodeData.parent, sharedNodes);
@@ -138,7 +137,7 @@ export const getChildrenMaxDimensions: ((
     });
 
     return {
-        horizontal: horizontalMax,
-        vertical: verticalMax,
+        horizontal: horizontalMax + padding,
+        vertical: verticalMax + padding,
     };
 };

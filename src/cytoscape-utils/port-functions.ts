@@ -103,15 +103,15 @@ const setPortLocation : ((portX: number, portY: number, targetNode: any) => dime
     const nodeLeft = center.x - dimensions.horizontal;
     const nodeRight = center.x + dimensions.horizontal;
 
-    if (acceptedTop <= portY && portY <= acceptedBottom) {
-        if (portX <= center.x) {
+    if (acceptedTop < portY && portY < acceptedBottom) {
+        if (portX < center.x) {
             return dimensionType.left;
         } else {
             return dimensionType.right;
         }
     } else if (portY < acceptedTop) {
         const diffTop = Math.abs(nodeTop - portY);
-        if (portX <= center.x) {
+        if (portX < center.x) {
             const diffLeft = Math.abs(nodeLeft - portX);
             if (diffLeft < diffTop) {
                 return dimensionType.left;
@@ -125,7 +125,7 @@ const setPortLocation : ((portX: number, portY: number, targetNode: any) => dime
         return dimensionType.top;
     } else {
         const diffBottom = Math.abs(nodeBottom - portY);
-        if (portX <= center.x) {
+        if (portX < center.x) {
             const diffLeft = Math.abs(nodeLeft - portX);
             if (diffLeft < diffBottom) {
                 return dimensionType.left;
@@ -159,23 +159,22 @@ export const moveNodePorts: ((
         let newy: number;
         switch (portData.situatedOn) {
             case 'left': {
-                newx = target.position.x - targetData.dimensions.horizontal;
+                newx = target.position.x - targetData.dimensions.horizontal - padding;
                 newy = target.position.y;
                 break;
             };
             case 'right': {
-                console.log(portData.situatedOn, targetData.dimensions.horizontal, target.position.x)
-                newx = target.position.x + targetData.dimensions.horizontal;
+                newx = target.position.x + targetData.dimensions.horizontal + padding;
                 newy = target.position.y;
                 break;
             };
             case 'top': {
-                newy = target.position.y - targetData.dimensions.vertical;
+                newy = target.position.y - targetData.dimensions.vertical - padding;
                 newx = target.position.x;
                 break;
             };
             case 'bottom': {
-                newy = target.position.y + targetData.dimensions.vertical;
+                newy = target.position.y + targetData.dimensions.vertical + padding;
                 newx = target.position.x;
                 break;
             };
