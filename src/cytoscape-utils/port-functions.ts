@@ -41,7 +41,7 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
         x: newX,
         y: newY,
     }
-    const label = addPortLabel(portId, sharedNodes, position);
+    const label = addPortLabel(portId, position, portLocatedOn, sharedNodes);
     
     const addedPort = {
         data: {
@@ -60,6 +60,7 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
         },                
     };
 
+
     const nodeToUpdate = sharedNodes.get(targetNode.id());
     if (nodeToUpdate === undefined) {
         console.log("BIG ERROR");
@@ -69,7 +70,6 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
     const nodeData = nodeToUpdate.data as NodeData;
     nodeData.ports.push(portId);
     sharedNodes.set(nodeData.id, nodeToUpdate);
-
 
     sharedNodes.set(portId, addedPort);
 };
@@ -191,27 +191,49 @@ export const moveNodePorts: ((
     });
 };
 
-const addPortLabel: ((portId: string, sharedNodes: y.Map<NodeObject>, portPosition: Position) => NodeObject) = (
-    portId, sharedNodes, portPosition
+const addPortLabel: ((portId: string, position: Position, location: dimensionType, sharedNodes: y.Map<NodeObject>) => NodeObject) = (
+    portId, portPosition, location, sharedNodes
 ) => {
     const labelId = uuidv4();
-    const diffCoordinate = 40;
+    const diff = 60;
+    let diffX = 0, diffY = 0;
+    const labelText = 'portLabel';
+
+    switch (location) {
+        case dimensionType.left: {
+            diffX = -diff - labelText.length * 3;
+            break;
+        }
+        case dimensionType.right: {
+            diffX = diff + labelText.length * 2;
+            break;
+        }
+        case dimensionType.top: {
+            diffY = -diff;
+            break;
+        }
+        case dimensionType.bottom: {
+            diffY = diff;
+            break;
+        }
+    }
+
     const addedLabel = {
         data: {
             id: labelId,
-            label: 'portLabel',
-            width: 60,
-            height: 30,
+            label: labelText,
+            width: 1,
+            height: 1,
             labelOf: portId,
             type: NodeType.portLabel,
             diffFromNode: {
-                x: diffCoordinate,
-                y: diffCoordinate,
+                x: diffX,
+                y: diffY,
             }
         },
         position: {
-            x: portPosition.x + diffCoordinate,
-            y: portPosition.y + diffCoordinate,
+            x: portPosition.x + diffX,
+            y: portPosition.y + diffY,
         },
     };
     return sharedNodes.set(labelId, addedLabel);
@@ -294,6 +316,65 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
    port.position = cyPort.position();
    const portId = portData.id;
    sharedNodes.set(portId, port);
+   moveLabel(portData.labelId, port.position, sharedNodes);
+};
+
+const moveLabel = (labelId: string, portPosition: Position, sharedNodes: y.Map<NodeObject>) => {
+    const labelNode = sharedNodes.get(labelId);
+    if (labelNode === undefined) {
+        console.log('Label not found.')
+        return;
+    }
+
+    const labelData = labelNode.data as PortLabelData;
+    const diffs = labelData.diffFromNode;
+    labelNode.position = {
+        x: diffs.x + portPosition.x,
+        y: diffs.y + portPosition.y,
+    };
+
+    sharedNodes.set(labelId, labelNode);
+};
+
+export const dragLabel = (label: NodeObject, sharedNodes: y.Map<NodeObject>) => {
+    const labelData = label.data as PortLabelData;
+    const portId = labelData.labelOf;
+    const port = sharedNodes.get(portId);
+    if (port === undefined) {
+        console.log('Port not found.');
+        return;
+    }
+
+    const cyLabelReturnValue = cy.getElementById(labelData.id);
+    if (cyLabelReturnValue.length === 0) {
+        console.log('Label node not found.');
+        return;
+    }
+    const cyLabel = cyLabelReturnValue.first() as NodeSingular;
+    const cyLabelPosition = cyLabel.position();
+
+    const portData = port.data as PortData;
+    const portCenter = port.position;
+    const portWidth = portData.width;
+
+    const acceptedXDiff = portWidth * 5;
+    const acceptedYDiff = portWidth * 5;
+
+    if (cyLabelPosition.x < portCenter.x - acceptedXDiff) {
+        cyLabel.position('x', portCenter.x - acceptedXDiff);
+    } else if (cyLabelPosition.x > portCenter.x + acceptedXDiff) {
+        cyLabel.position('x', portCenter.x + acceptedXDiff);
+    }
+    
+    if (cyLabelPosition.y < portCenter.y - acceptedYDiff) {
+        cyLabel.position('y', portCenter.y - acceptedYDiff);
+    } else if (cyLabelPosition.y > portCenter.y + acceptedYDiff) {
+        cyLabel.position('y', portCenter.y + acceptedYDiff);
+    }
+    
+
+    label.position = cyLabel.position();
+    sharedNodes.set(labelData.id, label);
 };
 
 const adjustHorizontalCoordinate = (portX: number, nodeX: number, cyPort: NodeSingular, horizontal: number, portWidth: number, l: number, r: number) => {

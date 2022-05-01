@@ -30,7 +30,7 @@ import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
 import { addNode, addNodeToParent, changeDimensions } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
-import { addPort, dragPort } from '../../cytoscape-utils/port-functions';
+import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
 import { PortData } from '../../interfaces/port';
 
@@ -157,6 +157,11 @@ const DiagramCanvas = ({
             
             if (movedNode.data.type === NodeType.port) {
                 dragPort(movedNode, sharedNodes);
+                return;
+            }
+
+            if (movedNode.data.type === NodeType.portLabel) {
+                dragLabel(movedNode, sharedNodes);
                 return;
             }
 
