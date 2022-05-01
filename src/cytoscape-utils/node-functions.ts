@@ -80,6 +80,8 @@ export const changeDimensions = (
     }
     const affectedNodeData = affectedNode.data as NodeData;
     const newDimensions = getChildrenMaxDimensions(nodeId, sharedNodes);
+    console.log('New dimensions');
+    console.log(newDimensions);
     affectedNodeData.dimensions = newDimensions;
     affectedNode.data = affectedNodeData;
 
@@ -122,10 +124,10 @@ export const getChildrenMaxDimensions: ((
         if (c === undefined) return;
         const childData = c.data as NodeData;
 
-        const childLeft = c.position.x - childData.dimensions.horizontal;
-        const childRight = c.position.x + childData.dimensions.horizontal;
-        const childTop = c.position.y - childData.dimensions.vertical;
-        const childBottom = c.position.y + childData.dimensions.vertical;
+        const childLeft = c.position.x - childData.dimensions.horizontal - padding;
+        const childRight = c.position.x + childData.dimensions.horizontal + padding;
+        const childTop = c.position.y - childData.dimensions.vertical - padding;
+        const childBottom = c.position.y + childData.dimensions.vertical + padding;
         
         const leftDiff = center.x - childLeft;
         const rightDiff = childRight - center.x;
@@ -137,7 +139,11 @@ export const getChildrenMaxDimensions: ((
     });
 
     return {
-        horizontal: horizontalMax + padding,
-        vertical: verticalMax + padding,
+        horizontal: horizontalMax,
+        vertical: verticalMax,
     };
+};
+
+export const dragNode = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
+    changeDimensions(node.data.id, sharedNodes);
 };

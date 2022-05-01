@@ -186,7 +186,7 @@ export const moveNodePorts: ((
         portNode.position = {x: newx, y: newy} as Position;
 
         sharedNodes.set(portId, portNode);
-        movePortLabel(portData.labelId, portNode.position, sharedNodes);
+        moveLabel(portData.labelId, portNode.position, sharedNodes);
     });
 };
 
@@ -238,31 +238,6 @@ const addPortLabel: ((portId: string, position: Position, location: dimensionTyp
     return sharedNodes.set(labelId, addedLabel);
 };
 
-const movePortLabel: ((
-    portLabelId: string,
-    portPosition: Position,
-    sharedNodes: y.Map<NodeObject>,
-) => void) = (
-    portLabelId, portPosition, sharedNodes
-) => {
-    const labelNode = sharedNodes.get(portLabelId);
-    if (labelNode === undefined) {
-        console.log(`No label with id ${portLabelId}`);
-        return;
-    }
-
-    if (labelNode.data.type !== NodeType.portLabel) {
-        console.log('Label had wrong type');
-        return;
-    }
-
-    const labelData = labelNode.data as PortLabelData;
-
-    labelNode.position.x = portPosition.x + labelData.diffFromNode.x;
-    labelNode.position.y = portPosition.y + labelData.diffFromNode.y;
-
-    sharedNodes.set(portLabelId, labelNode);
-};
 
 export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => void) = (port, sharedNodes) => 
 {

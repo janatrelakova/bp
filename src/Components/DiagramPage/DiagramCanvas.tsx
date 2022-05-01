@@ -28,11 +28,10 @@ import { NodeObject, NodeData, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
-import { addNode, addNodeToParent, changeDimensions } from '../../cytoscape-utils/node-functions';
+import { addNode, addNodeToParent, changeDimensions, dragNode } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
 import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
-import { PortData } from '../../interfaces/port';
 
 var $ = require('jquery');
 const contextMenus = require('cytoscape-context-menus');
@@ -70,10 +69,6 @@ const DiagramCanvas = ({
     const [ nodeName2, setNodeName2 ] = useState<string>('');
     const [ resizingNode, setResizingNode ] = useState<null | string>(null);
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
-
-    let sourceNode: NodeSingular | null = null;
-    let targetNode: NodeSingular | null = null;
-
 
     const resizeNode = (
             event: any,
@@ -165,9 +160,9 @@ const DiagramCanvas = ({
                 return;
             }
 
-            const nodeData = movedNode.data as NodeData;
-            changeDimensions(nodeId, sharedNodes);
-            // movePorts(movedNode.position, nodeData.ports, sharedNodes);
+            dragNode(movedNode, sharedNodes);
+
+            //changeDimensions(nodeId, sharedNodes);
         });
         
     }, []);
