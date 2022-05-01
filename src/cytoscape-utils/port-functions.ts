@@ -3,12 +3,44 @@ import { v4 as uuidv4 } from 'uuid';
 import { NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
 import { PortData, PortLabelData } from "../interfaces/port";
-import { KeyboardReturnOutlined } from "@mui/icons-material";
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
 
-export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
+export const addPort = (initialPosition: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
     const portId = uuidv4();
-    const portLocatedOn = getPortLocation(position.x, position.y, sharedNodes.get(targetNode.id()));
+    const target = sharedNodes.get(targetNode.id());
+    if (target === undefined) {
+        console.log('Target node not found.')
+        return;
+    };
+
+    const targetCenter = target.position;
+    const targetBorders = (target.data as NodeData).dimensions;
+
+    const portLocatedOn = setPortLocation(initialPosition.x, initialPosition.y, target);
+    let newX = initialPosition.x, newY = initialPosition.y;
+    switch (portLocatedOn) {
+        case dimensionType.left: {
+            newX = targetCenter.x - targetBorders.horizontal - padding;
+            break;
+        }
+        case dimensionType.right: {
+            newX = targetCenter.x + targetBorders.horizontal + padding;
+            break;
+        }
+        case dimensionType.top: {
+            newY = targetCenter.y - targetBorders.vertical - padding;
+            break;
+        }
+        case dimensionType.bottom: {
+            newY = targetCenter.y + targetBorders.vertical + padding;
+            break;
+        }
+    };
+
+    const position = {
+        x: newX,
+        y: newY,
+    }
     const label = addPortLabel(portId, sharedNodes, position);
     
     const addedPort = {
@@ -17,7 +49,6 @@ export const addPort = (position: Position, targetNode: any, sharedNodes: y.Map<
             width: 20,
             height: 20,
             portOf: targetNode.id(),
-            positionOnNode: 30,
             situatedOn: portLocatedOn,
             labelId: label.data.id,
             label: null,
@@ -50,7 +81,7 @@ enum dimensionType {
     bottom = 'bottom',
 }
 
-const getPortLocation : ((portX: number, portY: number, targetNode: any) => dimensionType) = (
+const setPortLocation : ((portX: number, portY: number, targetNode: any) => dimensionType) = (
     portX: number,
     portY: number,
     targetNode: NodeObject | undefined,
@@ -59,29 +90,54 @@ const getPortLocation : ((portX: number, portY: number, targetNode: any) => dime
         console.log('Target was undefined.');
         return dimensionType.bottom;
     }
+
     const nodeData = targetNode.data as NodeData;
     const dimensions = nodeData.dimensions;
-    const left = Math.abs(dimensions.left - portX + targetNode.position.x);
-    const top = Math.abs(dimensions.top - portY +  + targetNode.position.y);
-    const right = Math.abs(dimensions.right - portX + targetNode.position.x);
-    const bottom = Math.abs(dimensions.bottom - portY + targetNode.position.y);
-    const minimum = Math.min(left, right, top, bottom);
-    switch (minimum) {
-        case left: {
-            return dimensionType.left;
-        };
-        case right: {
-            return dimensionType.right;
-        };
-        case top: {
-            return dimensionType.top;
-        };
-        case bottom: {
-            return dimensionType.bottom;
-        };
-        default: return dimensionType.right;
-    }
+    const center = targetNode.position;
+    
+    const acceptedTop = center.y - dimensions.horizontal / 2;
+    const acceptedBottom = center.y + dimensions.horizontal / 2;
 
+    const nodeTop = center.y - dimensions.vertical;
+    const nodeBottom = center.y + dimensions.vertical;
+    const nodeLeft = center.x - dimensions.horizontal;
+    const nodeRight = center.x + dimensions.horizontal;
+
+    if (acceptedTop <= portY && portY <= acceptedBottom) {
+        if (portX <= center.x) {
+            return dimensionType.left;
+        } else {
+            return dimensionType.right;
+        }
+    } else if (portY < acceptedTop) {
+        const diffTop = Math.abs(nodeTop - portY);
+        if (portX <= center.x) {
+            const diffLeft = Math.abs(nodeLeft - portX);
+            if (diffLeft < diffTop) {
+                return dimensionType.left;
+            }
+        } else {
+            const diffRight = Math.abs(nodeRight - portX);
+            if (diffRight < diffTop) {
+                return dimensionType.right;
+            }
+        }
+        return dimensionType.top;
+    } else {
+        const diffBottom = Math.abs(nodeBottom - portY);
+        if (portX <= center.x) {
+            const diffLeft = Math.abs(nodeLeft - portX);
+            if (diffLeft < diffBottom) {
+                return dimensionType.left;
+            }
+        } else {
+            const diffRight = Math.abs(nodeRight - portX);
+            if (diffRight < diffBottom) {
+                return dimensionType.right;
+            }
+        }
+        return dimensionType.bottom;
+    }
 };
 
 export const moveNodePorts: ((
@@ -103,23 +159,23 @@ export const moveNodePorts: ((
         let newy: number;
         switch (portData.situatedOn) {
             case 'left': {
-                newx = targetData.dimensions.left  + target.position.x;
+                newx = target.position.x - targetData.dimensions.horizontal;
                 newy = target.position.y;
                 break;
             };
             case 'right': {
-                console.log(portData.situatedOn, targetData.dimensions.right, target.position.x)
-                newx = targetData.dimensions.right  + target.position.x;
+                console.log(portData.situatedOn, targetData.dimensions.horizontal, target.position.x)
+                newx = target.position.x + targetData.dimensions.horizontal;
                 newy = target.position.y;
                 break;
             };
             case 'top': {
-                newy = targetData.dimensions.top + target.position.y;
+                newy = target.position.y - targetData.dimensions.vertical;
                 newx = target.position.x;
                 break;
             };
             case 'bottom': {
-                newy = targetData.dimensions.bottom + target.position.y;
+                newy = target.position.y + targetData.dimensions.vertical;
                 newx = target.position.x;
                 break;
             };
@@ -160,8 +216,6 @@ const addPortLabel: ((portId: string, sharedNodes: y.Map<NodeObject>, portPositi
     };
     return sharedNodes.set(labelId, addedLabel);
 };
-
-
 
 const movePortLabel: ((
     portLabelId: string,
@@ -206,31 +260,14 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     const nodePosition = node.position;
     console.log(nodeData);
     const nodeDimensions = nodeData.dimensions;
-    let l, r, t, b; 
+    let l = 0, r = 0, t = 0, b = 0; 
 
-    if (location === dimensionType.left) {
-        l = nodePosition.x + nodeDimensions.left - 1;
-        r = nodePosition.x + nodeDimensions.left + 1;
-        t = nodePosition.y + nodeDimensions.top - portData.height;
-        b = nodePosition.y + nodeDimensions.bottom + portData.height;
-    } else if (location === dimensionType.right) {
-        l = nodePosition.x + nodeDimensions.right - 1;
-        r = nodePosition.x + nodeDimensions.right + 1;
-        t = nodePosition.y + nodeDimensions.top - portData.height;
-        b = nodePosition.y + nodeDimensions.bottom + portData.height;
-    } else if (location === dimensionType.top) {
-        t = nodePosition.y + nodeDimensions.top - 1;
-        b = nodePosition.y + nodeDimensions.top + 1;
-        l = nodePosition.y + nodeDimensions.left + portData.width;
-        r = nodePosition.y + nodeDimensions.right - portData.width;
-    } else if (location === dimensionType.bottom) {
-        t = nodePosition.y + nodeDimensions.bottom - 1;
-        b = nodePosition.y + nodeDimensions.bottom + 1;
-        l = nodePosition.y + nodeDimensions.left + portData.width;
-        r = nodePosition.y + nodeDimensions.right - portData.width;
+    if (location === dimensionType.left || location === dimensionType.right) {
+        t = nodePosition.y - nodeDimensions.vertical - portData.height;
+        b = nodePosition.y + nodeDimensions.vertical + portData.height;        
     } else {
-        console.log('Could not map location.')
-        return;
+        l = nodePosition.x - nodeDimensions.horizontal - portData.width;
+        r = nodePosition.x + nodeDimensions.horizontal + portData.width;
     }
 
     const position = port.position;
@@ -242,46 +279,41 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     }
 
     const cyPort = cyPortReturnValue.first() as NodeSingular;
-
-    let x, y;
+    console.log(location);
 
     if (location === dimensionType.right) {
-        cyPort.position('x', nodePosition.x + nodeDimensions.right + padding)
-        if (position.y > t) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.top - portData.height);
-        } else if (position.y < b) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.bottom + portData.height);
+        cyPort.position('x', nodePosition.x + nodeDimensions.horizontal + padding)
+        if (position.y < t) {
+            cyPort.position('y', nodePosition.y - nodeDimensions.vertical + portData.height);
+        } else if (position.y > b) {
+            cyPort.position('y', nodePosition.y + nodeDimensions.vertical - portData.height);
         }
     } else if (location === dimensionType.left) {
-        cyPort.position('x', nodePosition.x + nodeDimensions.left - padding)
-        if (position.y > t) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.top - portData.height);
-        } else if (position.y < b) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.bottom + portData.height);
+        cyPort.position('x', nodePosition.x - nodeDimensions.horizontal - padding)
+        if (position.y < t) {
+            cyPort.position('y', nodePosition.y - nodeDimensions.vertical + portData.height);
+        } else if (position.y > b) {
+            cyPort.position('y', nodePosition.y + nodeDimensions.vertical - portData.height);
         }
+    } else if (location === dimensionType.top) {
+        console.log('som hore');
+        cyPort.position('y', nodePosition.y - nodeDimensions.vertical - padding);
+        if (position.x < l) {
+            cyPort.position('x', nodePosition.x - nodeDimensions.vertical + portData.width);
+        } else if (position.x > r) {
+            cyPort.position('x', nodePosition.x + nodeDimensions.vertical - portData.width);
+        }
+    } else {
+        console.log('som dole');
+        cyPort.position('y', nodePosition.y + nodeDimensions.vertical + padding);
+        if (position.x < l) {
+            cyPort.position('x', nodePosition.x - nodeDimensions.vertical + portData.width);
+        } else if (position.y > r) {
+            cyPort.position('x', nodePosition.x + nodeDimensions.vertical - portData.width);
+        } 
     }
 
-/*
-   // if position is out of boundaries
-    if (position.x < l || position.x > r) {
-        if (location === dimensionType.left) {
-            cyPort.position('x', nodePosition.x + nodeDimensions.left);
-        } else if (location === dimensionType.right) {
-            cyPort.position('x', nodePosition.x + nodeDimensions.right);
-        }
-
-   }
-
-   if (position.y < b || position.y > t) {
-       if (location === dimensionType.top) {
-           cyPort.position('y', nodePosition.y + nodeDimensions.top - portData.height);
-       } else if (location === dimensionType.bottom) {
-           cyPort.position('y', nodePosition.y + nodeDimensions.bottom + portData.height);
-       }
-   }
-*/
    port.position = cyPort.position();
    const portId = portData.id;
    sharedNodes.set(portId, port);
-
-}
+};

@@ -8,10 +8,8 @@ export enum NodeType {
 }
 
 export type Dimensions = {
-    left: number,
-    top: number,
-    right: number,
-    bottom: number,
+    horizontal: number,
+    vertical: number,
 }
 
 export type NodeData = {

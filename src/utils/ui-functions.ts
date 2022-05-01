@@ -51,10 +51,8 @@ export const handleResizeNodeApply = (
 
     resized.data = resizedData;
     resized.data.dimensions = {
-        right: nodeWidth / 2,
-        left: -nodeWidth / 2,
-        top: nodeHeight / 2,
-        bottom: -nodeHeight / 2,
+        horizontal: nodeWidth / 2,
+        vertical: nodeWidth / 2,
     };
     
     sharedNodes.set(resized.data.id, resized);

@@ -9,7 +9,6 @@ export type PortData = {
     label: null,
     labelId: string,
     situatedOn: 'left' | 'top' | 'right' | 'bottom',
-    positionOnNode: number,
     type: NodeType,
 }
 

@@ -22,10 +22,8 @@ export const addNode = (
             height: nodeHeight,
             ports: [],
             dimensions: {
-                left: - nodeWidth / 2,
-                top: nodeHeight / 2,
-                right: nodeWidth / 2,
-                bottom: - nodeHeight / 2,
+                horizontal: nodeWidth / 2,
+                vertical: nodeHeight / 2,
             },
             parent: null,
             type: NodeType.node,
@@ -52,10 +50,8 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
             height: nodeHeight,
             ports: [],
             dimensions: {
-                left: - nodeWidth / 2,
-                top: nodeHeight / 2,
-                right: nodeWidth / 2,
-                bottom: - nodeHeight / 2,
+                horizontal: nodeWidth / 2,
+                vertical: nodeHeight / 2,
             },
             type: NodeType.node,
         },
@@ -95,10 +91,8 @@ export const changeDimensions = (
 };
 
 type DimensionsType = {
-    left: number,
-    right: number,
-    top: number,
-    bottom: number,
+    horizontal: number,
+    vertical: number,
 }
 
 
@@ -106,54 +100,45 @@ export const getChildrenMaxDimensions: ((
     nodeId: string,
     sharedNodes: y.Map<NodeObject>,
 ) => DimensionsType) = (nodeId, sharedNodes) => {
-    const nodeData = sharedNodes.get(nodeId)?.data as NodeData;
-    const previousDimensions = nodeData.dimensions;
-    const cyNode = cy.getElementById(nodeId);
-    const directChildren: string[] = cy.getElementById(nodeId).children().map(c => c.id());
-    const sharedChildren: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
-    const children = sharedChildren.filter(c => c !== undefined);
-    const left = Math.min(...children.map(n => {
-        if (n === undefined) {
-            return Infinity;
-        }
-        const nodeData = n.data as NodeData;
-        return nodeData.dimensions.left + n.position.x - padding;
-    }));
-
-    const right = Math.max(...children.map(n => {
-        if (n === undefined) {
-            return -Infinity;
-        }
-        const nodeData = n.data as NodeData;
-        return nodeData.dimensions.right + n.position.x + padding;
-    }));
-
-    const bottom = Math.min(...children.map(n => {
-        if (n === undefined) {
-            return Infinity;
-        }
-        const nodeData = n.data as NodeData;
-        return nodeData.dimensions.bottom + n.position.y - padding;
-    }));
-
-    const top = Math.max(...children.map(n => {
-        if (n === undefined) {
-            return -Infinity;
-        }
-        const nodeData = n.data as NodeData;
-        return nodeData.dimensions.top + n.position.y + padding;
-    }));
-
-    console.log(left, right, top, bottom);
-
-    if (children.length > 0) {
+    const node = sharedNodes.get(nodeId);
+    if (node === undefined) {
+        console.log('Node not found.');
         return {
-            left: left - cyNode.position().x ,
-            right: right - cyNode.position().x,
-            top: - cyNode.position().y + top,
-            bottom:  -cyNode.position().y + bottom,
-        };        
+            horizontal: Infinity,
+            vertical: Infinity,
+        };
     }
 
-    return previousDimensions;
+    const nodeData = node.data as NodeData;
+    const previousDimensions = nodeData.dimensions;
+    const cyNode =  cy.getElementById(nodeId);
+    const directChildren: string[] = cyNode.children().map(c => c.id());
+    const children: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
+    const center = cyNode.position();
+
+    let horizontalMax = previousDimensions.horizontal;
+    let verticalMax = previousDimensions.vertical;
+
+    children.map(c => {
+        if (c === undefined) return;
+        const childData = c.data as NodeData;
+
+        const childLeft = c.position.x - childData.dimensions.horizontal;
+        const childRight = c.position.x + childData.dimensions.horizontal;
+        const childTop = c.position.y - childData.dimensions.vertical;
+        const childBottom = c.position.y + childData.dimensions.vertical;
+        
+        const leftDiff = center.x - childLeft;
+        const rightDiff = childRight - center.x;
+        const topDiff = center.y - childTop;
+        const bottomDiff = childBottom - center.y;
+
+        horizontalMax = Math.max(leftDiff, rightDiff, horizontalMax);
+        verticalMax = Math.max(topDiff, bottomDiff, verticalMax);
+    });
+
+    return {
+        horizontal: horizontalMax,
+        vertical: verticalMax,
+    };
 };
