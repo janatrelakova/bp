@@ -246,7 +246,6 @@ const movePortLabel: ((
 export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => void) = (port, sharedNodes) => 
 {
     const portData = port.data as PortData;
-    console.log(portData);
     const location = portData.situatedOn;
 
     const node = sharedNodes.get(portData.portOf.toString());
@@ -258,7 +257,6 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
 
     const nodeData = node?.data as NodeData;
     const nodePosition = node.position;
-    console.log(nodeData);
     const nodeDimensions = nodeData.dimensions;
     let l = 0, r = 0, t = 0, b = 0; 
 
@@ -277,43 +275,39 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
         console.log('No port found on cy.');
         return;
     }
-
     const cyPort = cyPortReturnValue.first() as NodeSingular;
-    console.log(location);
 
     if (location === dimensionType.right) {
         cyPort.position('x', nodePosition.x + nodeDimensions.horizontal + padding)
-        if (position.y < t) {
-            cyPort.position('y', nodePosition.y - nodeDimensions.vertical + portData.height);
-        } else if (position.y > b) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.vertical - portData.height);
-        }
+        adjustVerticalCoordinate(position.y, nodePosition.y, cyPort, nodeDimensions.vertical, portData.height, t, b);
     } else if (location === dimensionType.left) {
         cyPort.position('x', nodePosition.x - nodeDimensions.horizontal - padding)
-        if (position.y < t) {
-            cyPort.position('y', nodePosition.y - nodeDimensions.vertical + portData.height);
-        } else if (position.y > b) {
-            cyPort.position('y', nodePosition.y + nodeDimensions.vertical - portData.height);
-        }
+        adjustVerticalCoordinate(position.y, nodePosition.y, cyPort, nodeDimensions.vertical, portData.height, t, b);
     } else if (location === dimensionType.top) {
-        console.log('som hore');
         cyPort.position('y', nodePosition.y - nodeDimensions.vertical - padding);
-        if (position.x < l) {
-            cyPort.position('x', nodePosition.x - nodeDimensions.vertical + portData.width);
-        } else if (position.x > r) {
-            cyPort.position('x', nodePosition.x + nodeDimensions.vertical - portData.width);
-        }
+        adjustHorizontalCoordinate(position.x, nodePosition.x, cyPort, nodeDimensions.horizontal, portData.width, l, r);
     } else {
-        console.log('som dole');
         cyPort.position('y', nodePosition.y + nodeDimensions.vertical + padding);
-        if (position.x < l) {
-            cyPort.position('x', nodePosition.x - nodeDimensions.vertical + portData.width);
-        } else if (position.y > r) {
-            cyPort.position('x', nodePosition.x + nodeDimensions.vertical - portData.width);
-        } 
+        adjustHorizontalCoordinate(position.x, nodePosition.x, cyPort, nodeDimensions.horizontal, portData.width, l, r);
     }
 
    port.position = cyPort.position();
    const portId = portData.id;
    sharedNodes.set(portId, port);
+};
+
+const adjustHorizontalCoordinate = (portX: number, nodeX: number, cyPort: NodeSingular, horizontal: number, portWidth: number, l: number, r: number) => {
+    if (portX < l) {
+        cyPort.position('x', nodeX - horizontal + portWidth);
+    } else if (portX > r) {
+        cyPort.position('x', nodeX + horizontal - portWidth);
+    } 
+};
+
+const adjustVerticalCoordinate = (portY: number, nodeY: number, cyPort: NodeSingular, vertical: number, portHeight: number, t: number, b: number) => {
+    if (portY < t) {
+        cyPort.position('y', nodeY - vertical + portHeight);
+    } else if (portY > b) {
+        cyPort.position('y', nodeY + vertical - portHeight);
+    }
 };
