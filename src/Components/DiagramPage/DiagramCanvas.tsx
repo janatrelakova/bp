@@ -3,8 +3,7 @@ import cytoscape, { Core, EdgeDefinition, NodeDefinition, NodeSingular, Position
 import edgehandles from 'cytoscape-edgehandles';
 
 import * as y from 'yjs';
-import { useEffect, useRef, MutableRefObject, useState, Dispatch } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useEffect, useRef, MutableRefObject, useState } from 'react';
 import { cytoscapestyles } from '../../utils/cytoscapestyles';
 import './DiagramCanvas.css';
 
@@ -25,14 +24,13 @@ import MouseIcon from '@mui/icons-material/Mouse';
 
 import { Link } from 'react-router-dom';
 import { EdgeObject } from '../../interfaces/edge';
-import { NodeObject, NodeData } from '../../interfaces/node';
+import { NodeObject, NodeData, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
-import { PortData } from '../../interfaces/port';
-import { addNode, addNodeToParent, getNodePorts } from '../../cytoscape-utils/node-functions';
+import { addNode, addNodeToParent, changeDimensions, dragNode } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
-import { addPort, movePorts } from '../../cytoscape-utils/port-functions';
+import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
 
 var $ = require('jquery');
@@ -72,10 +70,6 @@ const DiagramCanvas = ({
     const [ resizingNode, setResizingNode ] = useState<null | string>(null);
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
 
-    let sourceNode: NodeSingular | null = null;
-    let targetNode: NodeSingular | null = null;
-
-
     const resizeNode = (
             event: any,
         ) => {
@@ -95,25 +89,19 @@ const DiagramCanvas = ({
                 if (event.target === cy) {
                     addNode(event.position, sharedNodes, nodeWidth, nodeHeight);
                 } else {
-                    console.log('tap on element');
                     addNodeToParent(event.position, event.target, sharedNodes);        
                 }
                 addNodeStatus.current = false;                    
 
             } else if (addPortStatus.current) {
                 if (event.target.isNode) {
-                    console.log(event.target);
 
                     addPort(event.position, event.target, sharedNodes);
-                    console.log(event.target.data().ports);
                     const z = sharedNodes.get(event.target.id())?.data as NodeData;
-                    console.log(z.ports);
                 }
                 addPortStatus.current = false;
             }
-
         });
-        
     };
 
     useEffect(() => {
@@ -121,6 +109,7 @@ const DiagramCanvas = ({
         sharedNodes.observeDeep(() => {
             cy.elements().remove();
             cy.add(Array.from<NodeDefinition>(sharedNodes.values()));
+            // maybe remove
             cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
         });
 
@@ -143,13 +132,13 @@ const DiagramCanvas = ({
 
         cy.layout(layoutOptions);
         cy.edgehandles(edgeOptions);
-        (cy as any).automove();
 
         registerEventHandlers(cy, addingNode, addingPort);
         registerContextMenu(cy, resizeNode, renameNode);
     }, []);
 
     useEffect(() => {
+
         cy.addListener('drag', 'node', function(e) {
             const node = e.target;
             const nodeId = node.id();
@@ -161,42 +150,20 @@ const DiagramCanvas = ({
                 return;
             }
             
-            if (movedNode.type !== 'node') {
-                console.log('would move port');
+            if (movedNode.data.type === NodeType.port) {
+                dragPort(movedNode, sharedNodes);
                 return;
             }
 
-            const nodeData = movedNode.data as NodeData;
+            if (movedNode.data.type === NodeType.portLabel) {
+                dragLabel(movedNode, sharedNodes);
+                return;
+            }
 
-            movePorts(movedNode.position, nodeData.ports, sharedNodes);
+            dragNode(movedNode, sharedNodes);
 
-            console.log('moving ports');
+            //changeDimensions(nodeId, sharedNodes);
         });
-
-        cy.addListener('dragfree', 'node', (e) => {
-            const node = e.target;
-            const nodeId = node.id();
-
-            const movedNode = sharedNodes.get(nodeId);
-
-            if (movedNode === undefined) {
-                alert("Dragged node is undefined...");
-                return;
-            }
-
-            if (movedNode.type !== 'node') {
-                console.log('would move port');
-                return;
-            }
-
-            const nodeData = movedNode.data as NodeData;
-
-            console.log('before moving ports')
-
-            movedNode.position = node.position();
-            movePorts(movedNode.position, nodeData.ports, sharedNodes)
-            sharedNodes.set(nodeId, movedNode);
-         });
         
     }, []);
 
@@ -354,3 +321,4 @@ const DiagramCanvas = ({
 
 export default DiagramCanvas;
 export {cy};
+export const padding = 30;

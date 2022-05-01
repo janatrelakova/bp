@@ -1,24 +1,27 @@
-import { NodeObject } from "../interfaces/node";
+import { NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
+import { changeDimensions, getChildrenMaxDimensions } from "../cytoscape-utils/node-functions";
 
 
 export const handleRenameNodeApply = (
     setter: ((value: React.SetStateAction<boolean>) => void),
-    affectedNode: null | string,
+    affectedNodeId: null | string,
     sharedNodes: y.Map<NodeObject>,
     namePart1: string,
     namePart2: string,
     ) => {
     setter(false);
-    if (affectedNode === null) {
+    if (affectedNodeId === null) {
         console.log('Something went really wrong.');
         return;
     }
-    const renamed = sharedNodes.get(affectedNode);
+    const renamed = sharedNodes.get(affectedNodeId);
     if (renamed === undefined) {
         console.log('Something went really wrong. --- undefined');
         return;
     }
+
+    if (renamed.data.type === NodeType.port) return;
 
     renamed.data.label = namePart1 + ' : ' + namePart2;
     sharedNodes.set(renamed.data.id, renamed);
@@ -26,23 +29,34 @@ export const handleRenameNodeApply = (
 
 export const handleResizeNodeApply = (
     setter: ((value: React.SetStateAction<boolean>) => void),
-    affectedNode: null | string,
+    affectedNodeId: null | string,
     sharedNodes: y.Map<NodeObject>,
     nodeWidth: number,
     nodeHeight: number,
 ) => {
     setter(false);
-    if (affectedNode === null) {
+    if (affectedNodeId === null) {
         console.log('Something went really wrong.');
         return;
     }
-    const resized = sharedNodes.get(affectedNode);
+    const resized = sharedNodes.get(affectedNodeId);
     if (resized === undefined) {
         console.log('Something went really wrong. --- undefined');
         return;
     }
+    const resizedData = resized.data as NodeData;
+    resizedData.width = nodeWidth;
+    resizedData.height = nodeHeight;
+    resizedData.dimensions = getChildrenMaxDimensions(affectedNodeId, sharedNodes);
 
-    resized.data.width = nodeWidth;
-    resized.data.height = nodeHeight;
+    resized.data = resizedData;
+    resized.data.dimensions = {
+        horizontal: nodeWidth / 2,
+        vertical: nodeWidth / 2,
+    };
+    
     sharedNodes.set(resized.data.id, resized);
+
+
+    changeDimensions(affectedNodeId, sharedNodes);
 };

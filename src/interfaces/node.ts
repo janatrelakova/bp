@@ -1,5 +1,16 @@
 import { Position } from "cytoscape"
-import { PortData } from "./port"
+import { PortData, PortLabelData } from "./port"
+
+export enum NodeType {
+    node = 'node',
+    port = 'port',
+    portLabel = 'portLabel',
+}
+
+export type Dimensions = {
+    horizontal: number,
+    vertical: number,
+}
 
 export type NodeData = {
     id: string,
@@ -7,10 +18,12 @@ export type NodeData = {
     width: number,
     height: number,
     ports: string[],
+    dimensions: Dimensions,
+    parent: string | null,
+    type: NodeType,
 }
 
 export type NodeObject = {
-    data: NodeData | PortData,
+    data: NodeData | PortData | PortLabelData,
     position: Position,
-    type: string,
 }
