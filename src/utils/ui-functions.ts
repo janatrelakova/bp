@@ -47,12 +47,12 @@ export const handleResizeNodeApply = (
     const resizedData = resized.data as NodeData;
     resizedData.width = nodeWidth;
     resizedData.height = nodeHeight;
-    resizedData.dimensions = getChildrenMaxDimensions(affectedNodeId, sharedNodes);
+    const childDimensions = getChildrenMaxDimensions(affectedNodeId, sharedNodes);
 
     resized.data = resizedData;
     resized.data.dimensions = {
         horizontal: nodeWidth / 2,
-        vertical: nodeWidth / 2,
+        vertical: nodeHeight / 2,
     };
     
     sharedNodes.set(resized.data.id, resized);
