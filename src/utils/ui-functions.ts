@@ -1,6 +1,6 @@
 import { NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
-import { changeDimensions, getChildrenMaxDimensions } from "../cytoscape-utils/node-functions";
+import { changeDimensions } from "../cytoscape-utils/node-functions";
 
 
 export const handleRenameNodeApply = (
@@ -47,16 +47,13 @@ export const handleResizeNodeApply = (
     const resizedData = resized.data as NodeData;
     resizedData.width = nodeWidth;
     resizedData.height = nodeHeight;
-    resizedData.dimensions = getChildrenMaxDimensions(affectedNodeId, sharedNodes);
 
     resized.data = resizedData;
     resized.data.dimensions = {
         horizontal: nodeWidth / 2,
-        vertical: nodeWidth / 2,
+        vertical: nodeHeight / 2,
     };
     
     sharedNodes.set(resized.data.id, resized);
-
-
     changeDimensions(affectedNodeId, sharedNodes);
 };

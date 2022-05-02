@@ -35,6 +35,16 @@ export const cytoscapestyles = [
         }
     },
     {
+        selector: 'node[type = "port"]',
+        style: {
+            'shape': 'rectangle',
+            'font-size': '30px',
+            'width': 'data(width)',
+            'height': 'data(height)',
+            'padding': 30,
+        }
+    },
+    {
         selector: 'node:selected',
         style: {
             'border-color': '#1E90FF',

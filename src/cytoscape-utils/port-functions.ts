@@ -1,6 +1,6 @@
 import { NodeSingular, Position } from "cytoscape";
 import { v4 as uuidv4 } from 'uuid';
-import { NodeData, NodeObject, NodeType } from "../interfaces/node";
+import { Dimensions, NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
 import { PortData, PortLabelData } from "../interfaces/port";
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
@@ -18,21 +18,30 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
 
     const portLocatedOn = setPortLocation(initialPosition.x, initialPosition.y, target);
     let newX = initialPosition.x, newY = initialPosition.y;
+    let arrow;
     switch (portLocatedOn) {
         case dimensionType.left: {
             newX = targetCenter.x - targetBorders.horizontal - padding;
+            newY = adjustPortVerticalPosition(targetCenter, targetBorders, newY, 40);
+            arrow = '→';
             break;
         }
         case dimensionType.right: {
             newX = targetCenter.x + targetBorders.horizontal + padding;
+            newY = adjustPortVerticalPosition(targetCenter, targetBorders, newY, 40);
+            arrow = '→';
             break;
         }
         case dimensionType.top: {
             newY = targetCenter.y - targetBorders.vertical - padding;
+            newX = adjustPortHorizontalPosition(targetCenter, targetBorders, newX, 40);
+            arrow = '↓';
             break;
         }
         case dimensionType.bottom: {
             newY = targetCenter.y + targetBorders.vertical + padding;
+            newX = adjustPortHorizontalPosition(targetCenter, targetBorders, newX, 40);
+            arrow = '↓';
             break;
         }
     };
@@ -40,18 +49,34 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
     const position = {
         x: newX,
         y: newY,
-    }
+    };
+
+    let percentualDiff;
+    if (portLocatedOn === dimensionType.left || portLocatedOn === dimensionType.right) {
+        percentualDiff = (newY - targetCenter.y) / Math.abs(targetBorders.vertical);
+        console.log('located on');
+        console.log(portLocatedOn);
+    } else {
+        console.log(newX, targetCenter.x, targetBorders.horizontal);
+        percentualDiff = (newX - targetCenter.x) / Math.abs(targetBorders.horizontal);
+        console.log('located on');
+        console.log(portLocatedOn);
+            
+        console.log('DIFF');
+        console.log(percentualDiff);
+    } 
+
     const label = addPortLabel(portId, position, portLocatedOn, sharedNodes);
-    
     const addedPort = {
         data: {
             id: portId,
-            width: 20,
-            height: 20,
+            width: 10,
+            height: 10,
             portOf: targetNode.id(),
             situatedOn: portLocatedOn,
+            situatedPercentually: percentualDiff,
             labelId: label.data.id,
-            label: null,
+            label: arrow,
             type: NodeType.port,
         },
         position: {
@@ -59,7 +84,6 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
             y: position.y,
         },                
     };
-
 
     const nodeToUpdate = sharedNodes.get(targetNode.id());
     if (nodeToUpdate === undefined) {
@@ -365,4 +389,26 @@ const adjustVerticalCoordinate = (portY: number, nodeY: number, cyPort: NodeSing
     } else if (portY > b) {
         cyPort.position('y', nodeY + vertical - portHeight);
     }
+};
+
+const adjustPortVerticalPosition = (center: Position, dimensions: Dimensions, portY: number, portHeight: number) => {
+    if (portY < center.y - dimensions.vertical + portHeight) {
+        return center.y - dimensions.vertical + portHeight;
+    }
+    if (portY > center.y + dimensions.vertical - portHeight) {
+        return center.y + dimensions.vertical - portHeight;
+    }
+
+    return portY;
+};
+
+const adjustPortHorizontalPosition = (center: Position, dimensions: Dimensions, portX: number, portWidth: number) => {
+    if (portX < center.x - dimensions.horizontal) {
+        return center.x - dimensions.horizontal + portWidth;
+    }
+    if (portX > center.x + dimensions.horizontal - portWidth) {
+        return center.x + dimensions.horizontal - portWidth;
+    }
+
+    return portX;
 };
