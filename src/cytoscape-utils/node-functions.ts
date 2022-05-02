@@ -138,8 +138,8 @@ export const getChildrenMaxDimensions: ((
         const topDiff = center.y - childTop;
         const bottomDiff = childBottom - center.y;
 
-        horizontalMax = Math.max(leftDiff, rightDiff);
-        verticalMax = Math.max(topDiff, bottomDiff);
+        horizontalMax = Math.max(leftDiff, rightDiff, horizontalMax);
+        verticalMax = Math.max(topDiff, bottomDiff, verticalMax);
     });
 
     return {
