@@ -18,25 +18,30 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
 
     const portLocatedOn = setPortLocation(initialPosition.x, initialPosition.y, target);
     let newX = initialPosition.x, newY = initialPosition.y;
+    let arrow;
     switch (portLocatedOn) {
         case dimensionType.left: {
             newX = targetCenter.x - targetBorders.horizontal - padding;
             newY = adjustPortVerticalPosition(targetCenter, targetBorders, newY, 40);
+            arrow = '→';
             break;
         }
         case dimensionType.right: {
             newX = targetCenter.x + targetBorders.horizontal + padding;
             newY = adjustPortVerticalPosition(targetCenter, targetBorders, newY, 40);
+            arrow = '→';
             break;
         }
         case dimensionType.top: {
             newY = targetCenter.y - targetBorders.vertical - padding;
             newX = adjustPortHorizontalPosition(targetCenter, targetBorders, newX, 40);
+            arrow = '↓';
             break;
         }
         case dimensionType.bottom: {
             newY = targetCenter.y + targetBorders.vertical + padding;
             newX = adjustPortHorizontalPosition(targetCenter, targetBorders, newX, 40);
+            arrow = '↓';
             break;
         }
     };
@@ -44,11 +49,9 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
     const position = {
         x: newX,
         y: newY,
-    }
-    const label = addPortLabel(portId, position, portLocatedOn, sharedNodes);
+    };
+
     let percentualDiff;
-
-
     if (portLocatedOn === dimensionType.left || portLocatedOn === dimensionType.right) {
         percentualDiff = (newY - targetCenter.y) / Math.abs(targetBorders.vertical);
         console.log('located on');
@@ -62,17 +65,18 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
         console.log('DIFF');
         console.log(percentualDiff);
     } 
-    
+
+    const label = addPortLabel(portId, position, portLocatedOn, sharedNodes);
     const addedPort = {
         data: {
             id: portId,
-            width: 20,
-            height: 20,
+            width: 10,
+            height: 10,
             portOf: targetNode.id(),
             situatedOn: portLocatedOn,
             situatedPercentually: percentualDiff,
             labelId: label.data.id,
-            label: null,
+            label: arrow,
             type: NodeType.port,
         },
         position: {

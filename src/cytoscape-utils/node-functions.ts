@@ -80,8 +80,6 @@ export const changeDimensions = (
     }
     const affectedNodeData = affectedNode.data as NodeData;
     const newDimensions = getChildrenMaxDimensions(nodeId, sharedNodes);
-    console.log('New dimensions');
-    console.log(newDimensions);
     affectedNodeData.dimensions = newDimensions;
     affectedNode.data = affectedNodeData;
 
