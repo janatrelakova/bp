@@ -111,14 +111,18 @@ export const getChildrenMaxDimensions: ((
     }
 
     const nodeData = node.data as NodeData;
-    const previousDimensions = nodeData.dimensions;
     const cyNode =  cy.getElementById(nodeId);
     const directChildren: string[] = cyNode.children().map(c => c.id());
     const children: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
+
+    if (children.length === 0) { 
+        return nodeData.dimensions;
+    }
+
     const center = cyNode.position();
 
-    let horizontalMax = previousDimensions.horizontal;
-    let verticalMax = previousDimensions.vertical;
+    let horizontalMax = -Infinity;
+    let verticalMax = -Infinity;
 
     children.map(c => {
         if (c === undefined) return;
@@ -134,8 +138,8 @@ export const getChildrenMaxDimensions: ((
         const topDiff = center.y - childTop;
         const bottomDiff = childBottom - center.y;
 
-        horizontalMax = Math.max(leftDiff, rightDiff, horizontalMax);
-        verticalMax = Math.max(topDiff, bottomDiff, verticalMax);
+        horizontalMax = Math.max(leftDiff, rightDiff);
+        verticalMax = Math.max(topDiff, bottomDiff);
     });
 
     return {
