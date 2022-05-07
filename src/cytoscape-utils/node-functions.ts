@@ -1,9 +1,35 @@
 import { Position } from "cytoscape";
 import { v4 as uuidv4 } from 'uuid';
-import { NodeData, NodeObject, NodeType } from "../interfaces/node";
+import { NodeData, NodeLabelData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
 import { moveNodePorts } from "./port-functions";
+
+
+const addNodeLabel = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
+    const nodeData = node.data as NodeData;
+    const id = node.data.id + '-label';
+    const addedLabel = {
+        data: {
+            id: id,
+            label: 'lagbel',
+            width: node.data.width,
+            height: 10,
+            parent: nodeData.parent,
+            type: NodeType.nodeLabel,
+            dimensions: {
+                horizontal: nodeData.dimensions.horizontal,
+                vertical: 5,
+            }
+        },
+        position: {
+            x: node.position.x,
+            y: node.position.y - nodeData.dimensions.vertical - 5 - 2 * padding,
+        },
+        grabbable: false,
+    };
+    sharedNodes.set(id, addedLabel);
+}
 
 
 export const addNode = (
@@ -17,7 +43,7 @@ export const addNode = (
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: 'parent',
+            label: '',
             width: nodeWidth,
             height: nodeHeight,
             ports: [],
@@ -34,6 +60,7 @@ export const addNode = (
         },
     };
     sharedNodes.set(addedNodeId, addedNode);
+    addNodeLabel(addedNode, sharedNodes);
 };
 
 
@@ -44,7 +71,7 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: 'child',
+            label: '',
             parent: parent.id(),
             width: nodeWidth,
             height: nodeHeight,
@@ -62,6 +89,7 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
     };
 
     sharedNodes.set(addedNodeId, addedNode);
+    addNodeLabel(addedNode, sharedNodes);
     changeDimensions(parent.id(), sharedNodes);
 };
 
@@ -85,6 +113,7 @@ export const changeDimensions = (
 
     sharedNodes.set(nodeId, affectedNode);
     moveNodePorts(affectedNodeData.ports, affectedNode, sharedNodes);
+    moveNodeLabel(nodeId, sharedNodes);
 
     changeDimensions(affectedNodeData.parent, sharedNodes);
 };
@@ -148,4 +177,57 @@ export const getChildrenMaxDimensions: ((
 
 export const dragNode = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
     changeDimensions(node.data.id, sharedNodes);
+    moveNodeLabel(node.data.id, sharedNodes);
 };
+
+const moveNodeLabel = (nodeId: string, sharedNodes: y.Map<NodeObject>) => {
+    const node = sharedNodes.get(nodeId);
+    if (node === undefined) {
+        console.log('When moving, parent was undeinfed.');
+        return;
+    }
+
+    const labelNode = sharedNodes.get(nodeId + '-label');
+    if (labelNode === undefined) {
+        console.log('When moving, label was undeinfed.');
+        return;
+    }
+
+    const labelData = labelNode.data as NodeLabelData;
+    const nodePosition = node.position;
+    const nodeData = node.data as NodeData;
+    const labelX = nodePosition.x;
+    const labelY = nodePosition.y - nodeData.dimensions.vertical - 2 * padding - 5;
+    labelData.width = nodeData.dimensions.horizontal * 2;
+    labelData.dimensions.horizontal = nodeData.dimensions.horizontal;
+    labelNode.data = labelData;
+    labelNode.position = {
+        x: labelX,
+        y: labelY,
+    }
+
+    sharedNodes.set(nodeId + '-label', labelNode);
+}
+
+export const selectProperNodes = (target: any, sharedNodes: y.Map<NodeObject>) => {
+    const nodeId = target.id().toString();
+    const node = sharedNodes.get(nodeId);
+    if (node === undefined) {
+        return;
+    }
+
+    console.log('imma here');
+    console.log(node);
+    console.log(nodeId);
+
+    if (node.data.type === NodeType.node) {
+        cy.getElementById(nodeId + '-label').style('border-color', 'yellow');
+        console.log(cy.getElementById(nodeId + '-label').first().selected());
+        
+
+    } else if (node.data.type === NodeType.nodeLabel) {
+        cy.getElementById(nodeId.split(0, -6)).first().select();
+        console.log(cy.getElementById(nodeId.split(0, -6)).first().selected());
+    }
+    
+}

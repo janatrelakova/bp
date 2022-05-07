@@ -5,7 +5,7 @@ export type PortData = {
     id: string,
     width: number,
     height: number,
-    portOf: NodeObject,
+    portOf: string,
     label: string,
     labelId: string,
     situatedOn: 'left' | 'top' | 'right' | 'bottom',

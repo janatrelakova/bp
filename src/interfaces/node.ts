@@ -5,11 +5,22 @@ export enum NodeType {
     node = 'node',
     port = 'port',
     portLabel = 'portLabel',
+    nodeLabel = 'nodeLabel',
 }
 
 export type Dimensions = {
     horizontal: number,
     vertical: number,
+}
+
+export type NodeLabelData = {
+    id: string,
+    label: string,
+    width: number,
+    height: number,
+    parent: string | null,
+    dimensions: Dimensions,
+    type: NodeType,
 }
 
 export type NodeData = {
@@ -24,6 +35,6 @@ export type NodeData = {
 }
 
 export type NodeObject = {
-    data: NodeData | PortData | PortLabelData,
+    data: NodeData | PortData | NodeLabelData | PortLabelData,
     position: Position,
 }
