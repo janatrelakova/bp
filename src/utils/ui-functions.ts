@@ -44,12 +44,17 @@ export const handleResizeNodeApply = (
         console.log('Something went really wrong. --- undefined');
         return;
     }
+
+    if (resized.data.type !== NodeType.node) {
+        return;
+    }
+    
     const resizedData = resized.data as NodeData;
     resizedData.width = nodeWidth;
     resizedData.height = nodeHeight;
 
     resized.data = resizedData;
-    resized.data.dimensions = {
+    (resized.data as any).dimensions = {
         horizontal: nodeWidth / 2,
         vertical: nodeHeight / 2,
     };

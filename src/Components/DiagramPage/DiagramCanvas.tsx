@@ -24,11 +24,11 @@ import MouseIcon from '@mui/icons-material/Mouse';
 
 import { Link } from 'react-router-dom';
 import { EdgeObject } from '../../interfaces/edge';
-import { NodeObject, NodeData, NodeType } from '../../interfaces/node';
+import { NodeObject, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
 import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
-import { addNode, addNodeToParent, changeDimensions, dragNode } from '../../cytoscape-utils/node-functions';
+import { addNode, addNodeToParent, dragNode, selectProperNodes } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
 import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
 import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
@@ -95,11 +95,13 @@ const DiagramCanvas = ({
 
             } else if (addPortStatus.current) {
                 if (event.target.isNode) {
-
                     addPort(event.position, event.target, sharedNodes);
-                    const z = sharedNodes.get(event.target.id())?.data as NodeData;
                 }
                 addPortStatus.current = false;
+            } else {
+                if (event.target.isNode) {
+                    selectProperNodes(event.target, sharedNodes);
+                }
             }
         });
     };
@@ -161,8 +163,6 @@ const DiagramCanvas = ({
             }
 
             dragNode(movedNode, sharedNodes);
-
-            //changeDimensions(nodeId, sharedNodes);
         });
         
     }, []);

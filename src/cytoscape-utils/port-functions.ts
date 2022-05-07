@@ -6,12 +6,32 @@ import { PortData, PortLabelData } from "../interfaces/port";
 import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
 
 export const addPort = (initialPosition: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
-    const portId = uuidv4();
-    const target = sharedNodes.get(targetNode.id());
-    if (target === undefined) {
+    const temporaryTarget = sharedNodes.get(targetNode.id());
+    if (temporaryTarget === undefined) {
         console.log('Target node not found.')
         return;
     };
+
+    const objectType = temporaryTarget.data.type;
+    if (objectType === NodeType.portLabel || objectType === NodeType.port) {
+        console.log('Cannot add port to another instance');
+        return;
+    }
+
+    let target;
+
+    if (objectType === NodeType.nodeLabel) {
+        const nodeTarget = temporaryTarget.data.id.slice(0, -6);
+        target = sharedNodes.get(nodeTarget);
+        if (target === undefined) {
+            console.log('Node of label not found.');
+            return;
+        }
+    }
+
+    if (target == null) {
+        target = temporaryTarget;
+    }
 
     const targetCenter = target.position;
     const targetBorders = (target.data as NodeData).dimensions;
@@ -33,7 +53,7 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
             break;
         }
         case dimensionType.top: {
-            newY = targetCenter.y - targetBorders.vertical - padding;
+            newY = targetCenter.y - targetBorders.vertical - 2 * padding - 5 - 40;
             newX = adjustPortHorizontalPosition(targetCenter, targetBorders, newX, 40);
             arrow = '↓';
             break;
@@ -52,27 +72,21 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
     };
 
     let percentualDiff;
+
     if (portLocatedOn === dimensionType.left || portLocatedOn === dimensionType.right) {
-        percentualDiff = (newY - targetCenter.y) / Math.abs(targetBorders.vertical);
-        console.log('located on');
-        console.log(portLocatedOn);
+        percentualDiff = (newY - targetCenter.y) / targetBorders.vertical;
     } else {
-        console.log(newX, targetCenter.x, targetBorders.horizontal);
-        percentualDiff = (newX - targetCenter.x) / Math.abs(targetBorders.horizontal);
-        console.log('located on');
-        console.log(portLocatedOn);
-            
-        console.log('DIFF');
-        console.log(percentualDiff);
+        percentualDiff = (newX - targetCenter.x) / targetBorders.horizontal;
     } 
 
+    const portId = uuidv4();
     const label = addPortLabel(portId, position, portLocatedOn, sharedNodes);
     const addedPort = {
         data: {
             id: portId,
             width: 10,
             height: 10,
-            portOf: targetNode.id(),
+            portOf: target.data.id,
             situatedOn: portLocatedOn,
             situatedPercentually: percentualDiff,
             labelId: label.data.id,
@@ -85,7 +99,7 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
         },                
     };
 
-    const nodeToUpdate = sharedNodes.get(targetNode.id());
+    const nodeToUpdate = sharedNodes.get(target.data.id);
     if (nodeToUpdate === undefined) {
         console.log("BIG ERROR");
         return;
@@ -122,7 +136,7 @@ const setPortLocation : ((portX: number, portY: number, targetNode: any) => dime
     const acceptedTop = center.y - dimensions.horizontal / 2;
     const acceptedBottom = center.y + dimensions.horizontal / 2;
 
-    const nodeTop = center.y - dimensions.vertical;
+    const nodeTop = center.y - dimensions.vertical - 2 * padding - 5;
     const nodeBottom = center.y + dimensions.vertical;
     const nodeLeft = center.x - dimensions.horizontal;
     const nodeRight = center.x + dimensions.horizontal;
@@ -171,6 +185,9 @@ export const moveNodePorts: ((
 ) => void) = (
     ports, target, sharedNodes
 ) => {
+    if (ports === undefined) {
+        return;
+    }
     ports.forEach(portId => {
         const portNode = sharedNodes.get(portId);
         if (portNode === undefined) {
@@ -184,22 +201,22 @@ export const moveNodePorts: ((
         switch (portData.situatedOn) {
             case 'left': {
                 newx = target.position.x - targetData.dimensions.horizontal - padding;
-                newy = target.position.y;
+                newy = target.position.y + targetData.dimensions.vertical * portData.situatedPercentually;
                 break;
             };
             case 'right': {
                 newx = target.position.x + targetData.dimensions.horizontal + padding;
-                newy = target.position.y;
+                newy = target.position.y + targetData.dimensions.vertical * portData.situatedPercentually;
                 break;
             };
             case 'top': {
-                newy = target.position.y - targetData.dimensions.vertical - padding;
-                newx = target.position.x;
+                newy = target.position.y - targetData.dimensions.vertical - 2 * padding - 5 - 40;
+                newx = target.position.x + targetData.dimensions.horizontal * portData.situatedPercentually;
                 break;
             };
             case 'bottom': {
                 newy = target.position.y + targetData.dimensions.vertical + padding;
-                newx = target.position.x;
+                newx = target.position.x + targetData.dimensions.horizontal * portData.situatedPercentually;
                 break;
             };
             default: {
@@ -281,7 +298,7 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     let l = 0, r = 0, t = 0, b = 0; 
 
     if (location === dimensionType.left || location === dimensionType.right) {
-        t = nodePosition.y - nodeDimensions.vertical - portData.height;
+        t = nodePosition.y - nodeDimensions.vertical - portData.height -  2 * padding;
         b = nodePosition.y + nodeDimensions.vertical + portData.height;        
     } else {
         l = nodePosition.x - nodeDimensions.horizontal - portData.width;
@@ -298,23 +315,32 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     const cyPort = cyPortReturnValue.first() as NodeSingular;
 
     if (location === dimensionType.right) {
-        cyPort.position('x', nodePosition.x + nodeDimensions.horizontal + padding)
+        cyPort.position('x', nodePosition.x + nodeDimensions.horizontal + padding);
         adjustVerticalCoordinate(position.y, nodePosition.y, cyPort, nodeDimensions.vertical, portData.height, t, b);
     } else if (location === dimensionType.left) {
-        cyPort.position('x', nodePosition.x - nodeDimensions.horizontal - padding)
+        cyPort.position('x', nodePosition.x - nodeDimensions.horizontal - padding);
         adjustVerticalCoordinate(position.y, nodePosition.y, cyPort, nodeDimensions.vertical, portData.height, t, b);
     } else if (location === dimensionType.top) {
-        cyPort.position('y', nodePosition.y - nodeDimensions.vertical - padding);
+        cyPort.position('y', nodePosition.y - nodeDimensions.vertical - 2 * padding - 5 - 40);
         adjustHorizontalCoordinate(position.x, nodePosition.x, cyPort, nodeDimensions.horizontal, portData.width, l, r);
     } else {
         cyPort.position('y', nodePosition.y + nodeDimensions.vertical + padding);
         adjustHorizontalCoordinate(position.x, nodePosition.x, cyPort, nodeDimensions.horizontal, portData.width, l, r);
     }
 
-   port.position = cyPort.position();
-   const portId = portData.id;
-   sharedNodes.set(portId, port);
-   moveLabel(portData.labelId, port.position, sharedNodes);
+    port.position = cyPort.position();
+
+    if (location === dimensionType.left || location === dimensionType.right) {
+        portData.situatedPercentually = (port.position.y - nodePosition.y) / nodeDimensions.vertical;
+    } else {
+        portData.situatedPercentually = (port.position.x - nodePosition.x) / nodeDimensions.horizontal;
+    }
+
+    port.position = cyPort.position();
+    port.data = portData;
+    const portId = portData.id;
+    sharedNodes.set(portId, port);
+    moveLabel(portData.labelId, port.position, sharedNodes);
 };
 
 const moveLabel = (labelId: string, portPosition: Position, sharedNodes: y.Map<NodeObject>) => {
