@@ -77,3 +77,25 @@ export const handleResizeNodeApply = (
     sharedNodes.set(resized.data.id, resized);
     changeDimensions(affectedNodeId, sharedNodes);
 };
+
+export const handlePortFlowChange = (
+    setter: ((value: React.SetStateAction<boolean>) => void),
+    portId: null | string,
+    sharedNodes: y.Map<NodeObject>,
+    arrow: string | null,
+) => {
+    setter(false);
+    if (portId === null) {
+        return;
+    }
+    const port = sharedNodes.get(portId);
+    if (port === undefined) {
+        return;
+    }
+    if (arrow === null) {
+        arrow =  '→';
+    }
+
+    port.data.label = arrow;
+    sharedNodes.set(portId, port);
+}

@@ -12,7 +12,7 @@ const addNodeLabel = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
     const addedLabel = {
         data: {
             id: id,
-            label: 'lagbel',
+            label: 'obj : object',
             width: node.data.width,
             height: 10,
             parent: nodeData.parent,
@@ -75,7 +75,7 @@ export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: '',
+            label: 't : type',
             parent: parent.id(),
             width: nodeWidth,
             height: nodeHeight,
@@ -219,10 +219,6 @@ export const selectProperNodes = (target: any, sharedNodes: y.Map<NodeObject>) =
     if (node === undefined) {
         return;
     }
-
-    console.log('imma here');
-    console.log(node);
-    console.log(nodeId);
 
     if (node.data.type === NodeType.node) {
         cy.getElementById(nodeId + '-label').style('border-color', 'yellow');

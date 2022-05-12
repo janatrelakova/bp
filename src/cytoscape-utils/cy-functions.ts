@@ -5,8 +5,9 @@ export const registerContextMenu = (
     cy: Core,
     doc: React.MutableRefObject<y.Doc>,
     resizeNode: (event: any) => void,
-    renameNode: (event: any, doc: React.MutableRefObject<y.Doc>) => void,
+    renameNode: (event: any) => void,
     removeNode: (event: any, doc: React.MutableRefObject<y.Doc>) => void,
+    changeFlow: (event: any, doc: React.MutableRefObject<y.Doc>) => void,
     ) => {
     (cy as any).contextMenus({
         menuItems: [
@@ -22,7 +23,7 @@ export const registerContextMenu = (
                 content: 'Rename',
                 tooltip: 'Rename',
                 selector: 'node',
-                onClickFunction: (e: any) => renameNode(e, doc),
+                onClickFunction: (e: any) => renameNode(e),
             },
             {
                 id: 'remove',
@@ -31,6 +32,13 @@ export const registerContextMenu = (
                 selector: 'node',
                 onClickFunction: (e: any) => removeNode(e, doc),
             },
+            {
+                id: 'reflow',
+                content: 'Change flow',
+                tooltip: 'Change flow',
+                selector: 'node[type = "port"]',
+                onClickFunction: (e: any) => changeFlow(e, doc),
+            }
         ],
         submenuIndicator: { src: '../arrow.svg', width: 12, height: 12 }
     });

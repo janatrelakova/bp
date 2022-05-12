@@ -9,7 +9,6 @@ import './DiagramCanvas.css';
 
 import Crop32TwoToneIcon from '@mui/icons-material/Crop32TwoTone';
 import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
-import ArrowForwardTwoToneIcon from '@mui/icons-material/ArrowForwardTwoTone';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -27,7 +26,7 @@ import { EdgeObject } from '../../interfaces/edge';
 import { NodeObject, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
 import { edgeOptions, ehDefaults } from '../../cytoscape-utils/edgeOptions';
-import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
+import { handlePortFlowChange, handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
 import { addNode, addNodeToParent, dragNode, selectProperNodes } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
 import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
@@ -59,21 +58,22 @@ const DiagramCanvas = ({
     doc
 } : DiagramCanvasProps) => {
 
-    const nodesRef = useRef(doc.current.getMap('shared-nodes') as y.Map<NodeObject>);
-    const sharedNodes = nodesRef.current;
-    const edgesRef = useRef(doc.current.getMap('shared-edges') as y.Map<EdgeObject>);
-    const sharedEdges = edgesRef.current;
+    const sharedNodes = doc.current.getMap('shared-nodes') as y.Map<NodeObject>;
+    const sharedEdges = doc.current.getMap('shared-edges') as y.Map<EdgeObject>;
 
     const addingNode = useRef<boolean>(false);
     const addingPort = useRef<boolean>(false);
     const [ dialogOpen, setDialogOpen ] = useState<boolean>(false);
     const [ renameDialogOpen, setRenameDialogOpen ] = useState<boolean>(false);
+    const [ changePortFlowDialog, setChangePortFlowDialog ] = useState<boolean>(false);
     const [ nodeWidth, setNodeWidth ] = useState<number>(100);
     const [ nodeHeight, setNodeHeight ] = useState<number>(200);
     const [ nodeName1, setNodeName1 ] = useState<string>('');
     const [ nodeName2, setNodeName2 ] = useState<string>('');
     const [ resizingNode, setResizingNode ] = useState<null | string>(null);
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
+    const [ changePortFlowNode, setPortChangeFlowNode ] = useState<null | string>(null);
+    const [ changePortFlowValue, setPortChangeFlowValue ] = useState<null | string>(null);
 
     const resizeNode = (
             event: any,
@@ -85,6 +85,11 @@ const DiagramCanvas = ({
     const renameNode = (event: any) => {
         setRenamingNode(event.target.id());
         setRenameDialogOpen(true);
+    }
+
+    const changeFlow = (event: any) => {
+        setPortChangeFlowNode(event.target.id());
+        setChangePortFlowDialog(true);
     }
 
     const registerEventHandlers = (cy: Core, addNodeStatus: MutableRefObject<boolean>, addPortStatus: MutableRefObject<boolean>) => {
@@ -173,7 +178,7 @@ const DiagramCanvas = ({
 
         registerEventHandlers(cy, addingNode, addingPort);
         registerEdgeEventHandlers(cy);
-        registerContextMenu(cy, doc, resizeNode, renameNode, removeNode);
+        registerContextMenu(cy, doc, resizeNode, renameNode, removeNode, changeFlow);
     }, []);
 
     useEffect(() => {
@@ -218,9 +223,37 @@ const DiagramCanvas = ({
         setRenameDialogOpen(false);
     };
 
+    const handleChangeFlowPortClose = () => {
+        setChangePortFlowDialog(false);
+    }
+        
+
     return (
         <>
             <div>
+                
+                <Dialog open={changePortFlowDialog} onClose={handleChangeFlowPortClose}>
+                    <DialogTitle>Choose port flow</DialogTitle>
+                    <DialogContent>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡨')}}>🡨</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡪')}}>🡪</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡩')}}>🡩</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡫')}}>🡫</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⮂')}}>⮂</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⇵')}}>⇵</Button>
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={() => handlePortFlowChange(
+                        setChangePortFlowDialog,
+                        changePortFlowNode,
+                        sharedNodes,
+                        changePortFlowValue
+                    )}>Apply</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+            <div>
+
                 <Dialog open={dialogOpen} onClose={handleClose}>
                     <DialogTitle>Enter dimensions</DialogTitle>
                     <DialogContent>
