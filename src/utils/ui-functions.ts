@@ -1,6 +1,7 @@
 import { NodeData, NodeObject, NodeType } from "../interfaces/node";
 import * as y from 'yjs';
 import { changeDimensions } from "../cytoscape-utils/node-functions";
+import { PortData } from "../interfaces/port";
 
 
 export const handleRenameNodeApply = (
@@ -15,13 +16,27 @@ export const handleRenameNodeApply = (
         console.log('Something went really wrong.');
         return;
     }
-    const renamed = sharedNodes.get(affectedNodeId);
+    let renamed = sharedNodes.get(affectedNodeId);
     if (renamed === undefined) {
         console.log('Something went really wrong. --- undefined');
         return;
     }
 
-    if (renamed.data.type === NodeType.port) return;
+    if (renamed.data.type === NodeType.port) {
+        const portData = renamed.data as PortData;
+        renamed = sharedNodes.get(portData.labelId);
+        if (renamed === undefined) {
+            console.log('Something went really wrong. --- undefined');
+            return;
+        }
+    } else if (renamed.data.type === NodeType.node) {
+        const id = affectedNodeId + '-label';
+        renamed = sharedNodes.get(id);
+        if (renamed === undefined) {
+            console.log('Something went really wrong. --- undefined');
+            return;
+        }
+    }
 
     renamed.data.label = namePart1 + ' : ' + namePart2;
     sharedNodes.set(renamed.data.id, renamed);
