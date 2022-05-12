@@ -1,3 +1,5 @@
+import { NodeObject, NodeType } from "../interfaces/node";
+
 export const edgeOptions = {
     canConnect: function( sourceNode: any, targetNode: any ){
       // whether an edge can be created between source and target
@@ -10,3 +12,8 @@ export const edgeOptions = {
     noEdgeEventsInDraw: true, // set events:no to edges during draws, prevents mouseouts on compounds
     disableBrowserGestures: true // during an edge drawing gesture, disable browser gestures such as two-finger trackpad swipe and pinch-to-zoom
 };
+
+export const ehDefaults = {
+    hoverDelay: 0,
+    snap: false,
+  };

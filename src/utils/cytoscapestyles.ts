@@ -54,8 +54,8 @@ export const cytoscapestyles = [
     {
         selector: 'edge',
         style: {
-            'curve-style': 'bezier',
-            'arrow-scale': 1.5,
+            'curve-style': 'taxi',
+            'taxi-direction': 'horizontal',
         }
     },
 
