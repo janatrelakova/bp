@@ -6,7 +6,7 @@ import './DiagramsGrid.css';
 
 const DiagramsGrid = () => {
     //const diagrams = ['aadsfa', 'adfab', 'cafadf', 'dafadf', 'e', 'adfafa', 'b', 'cadfa', 'd', 'e', 'a', 'b', 'c', 'd', 'e'];
-    const i = useGetDiagrams('5461aa1b-7238-4cc7-bc20-eb5314f490b6');
+    const i = useGetDiagrams('1b77295b-e86c-45d0-9718-ac88f0cdfc4f');
     const diagrams: IDiagram[] = [];
 
     if (i == null) {

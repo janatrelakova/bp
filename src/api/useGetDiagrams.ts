@@ -6,7 +6,7 @@ export interface IDiagram {
     room: string,
 }
 
-export const useGetDiagrams = (id: '5461aa1b-7238-4cc7-bc20-eb5314f490b6') : IDiagram[] => {
+export const useGetDiagrams = (id: string) : IDiagram[] => {
     const [initialState, setInitialState] = useState<IDiagram[]>();
 
     useEffect(() => {

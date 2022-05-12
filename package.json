@@ -2,7 +2,7 @@
   "name": "bp-github",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://localhost:44306",
+  "proxy": "http://mys03.fit.vutbr.cz:44306",
   "dependencies": {
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
