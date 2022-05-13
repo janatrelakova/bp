@@ -1,5 +1,5 @@
 import * as React from 'react';
-import cytoscape, { Core, EdgeDefinition, NodeDefinition, NodeSingular, Position } from 'cytoscape';
+import cytoscape, { CollectionReturnValue, Core, EdgeDefinition, NodeDefinition, NodeSingular, Position } from 'cytoscape';
 import edgehandles from 'cytoscape-edgehandles';
 
 import * as y from 'yjs';
@@ -20,6 +20,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MouseIcon from '@mui/icons-material/Mouse';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 import { Link } from 'react-router-dom';
 import { EdgeObject } from '../../interfaces/edge';
@@ -74,6 +76,7 @@ const DiagramCanvas = ({
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
     const [ changePortFlowNode, setPortChangeFlowNode ] = useState<null | string>(null);
     const [ changePortFlowValue, setPortChangeFlowValue ] = useState<null | string>(null);
+    const [ additionalStyleNode, setAdditionalStyleNode ] = useState<undefined | CollectionReturnValue | null>(undefined);
 
     const resizeNode = (
             event: any,
@@ -95,6 +98,12 @@ const DiagramCanvas = ({
     const registerEventHandlers = (cy: Core, addNodeStatus: MutableRefObject<boolean>, addPortStatus: MutableRefObject<boolean>) => {
 
         cy.on('tap', function(event) {
+            console.log('tap');
+            if (additionalStyleNode) {
+                console.log('in setting');
+                additionalStyleNode.style('border-color', 'black');
+                setAdditionalStyleNode(null);
+            }
             if (addNodeStatus.current) {
                 if (event.target === cy) {
                     addNode(event.position, sharedNodes, nodeWidth, nodeHeight);
@@ -110,7 +119,7 @@ const DiagramCanvas = ({
                 addPortStatus.current = false;
             } else {
                 if (event.target.isNode) {
-                    selectProperNodes(event.target, sharedNodes);
+                    setAdditionalStyleNode(selectProperNodes(event.target, sharedNodes));
                 }
             }
         });
@@ -372,6 +381,11 @@ const DiagramCanvas = ({
                         <Tooltip title='Clear data' placement='right'>
                             <IconButton onClick={clearData}>
                                 <DeleteForeverTwoToneIcon fontSize='large' color='primary' />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title='Import diagram' placement='right'>
+                            <IconButton onClick={clearData}>
+                                <FileDownloadIcon fontSize='large' color='primary' />
                             </IconButton>
                         </Tooltip>
                     </div>
