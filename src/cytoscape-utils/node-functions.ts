@@ -220,11 +220,14 @@ export const selectProperNodes = (target: any, sharedNodes: y.Map<NodeObject>) =
         return;
     }
 
+    let p = null;
+
     if (node.data.type === NodeType.node) {
-        cy.getElementById(nodeId + '-label').style('border-color', 'yellow');
+        p  = cy.getElementById(nodeId + '-label').style('border-color', 'blue');
 
     } else if (node.data.type === NodeType.nodeLabel) {
-        cy.getElementById(nodeId.split(0, -6)).first().select();
+        p = cy.getElementById(nodeId.split(0, -6)).style('border-color', 'blue');
     }
-    
+
+    return p;
 }
