@@ -23,7 +23,7 @@ const DiagramContainer = ({
     useEffect(() => {
         // establish webrtc connection
         setWebRtcProvider(new WebrtcProvider(room, doc.current, {
-            signaling: ['ws://localhost:4444'],
+            signaling: ["ws://mys03.fit.vutbr.cz:4445"],
             password: null,
             awareness: new awarenessProtocol.Awareness(doc.current),
             maxConns: 10,
