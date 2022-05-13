@@ -4,6 +4,5 @@ export type EdgeData = {
 }
 
 export type EdgeObject = {
-    id: string,
     data: EdgeData,
 }

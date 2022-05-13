@@ -12,7 +12,7 @@ const addNodeLabel = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
     const addedLabel = {
         data: {
             id: id,
-            label: 'lagbel',
+            label: 'obj : object',
             width: node.data.width,
             height: 10,
             parent: nodeData.parent,
@@ -65,13 +65,17 @@ export const addNode = (
 
 
 export const addNodeToParent = (position: Position, parent: any, sharedNodes: y.Map<NodeObject>) => {
+    if (parent.data().type !== NodeType.node) {
+        return;
+    }
+    
     const addedNodeId = uuidv4();
     const nodeWidth = parent.data().width;
     const nodeHeight = parent.data().height;
     const addedNode = {
         data: {
             id: addedNodeId,
-            label: '',
+            label: 't : type',
             parent: parent.id(),
             width: nodeWidth,
             height: nodeHeight,
@@ -216,18 +220,11 @@ export const selectProperNodes = (target: any, sharedNodes: y.Map<NodeObject>) =
         return;
     }
 
-    console.log('imma here');
-    console.log(node);
-    console.log(nodeId);
-
     if (node.data.type === NodeType.node) {
         cy.getElementById(nodeId + '-label').style('border-color', 'yellow');
-        console.log(cy.getElementById(nodeId + '-label').first().selected());
-        
 
     } else if (node.data.type === NodeType.nodeLabel) {
         cy.getElementById(nodeId.split(0, -6)).first().select();
-        console.log(cy.getElementById(nodeId.split(0, -6)).first().selected());
     }
     
 }

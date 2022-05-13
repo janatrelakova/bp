@@ -9,7 +9,6 @@ import './DiagramCanvas.css';
 
 import Crop32TwoToneIcon from '@mui/icons-material/Crop32TwoTone';
 import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
-import ArrowForwardTwoToneIcon from '@mui/icons-material/ArrowForwardTwoTone';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -26,24 +25,28 @@ import { Link } from 'react-router-dom';
 import { EdgeObject } from '../../interfaces/edge';
 import { NodeObject, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
-import { edgeOptions } from '../../cytoscape-utils/edgeOptions';
-import { handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
+import { edgeOptions, ehDefaults } from '../../cytoscape-utils/edgeOptions';
+import { handlePortFlowChange, handleRenameNodeApply, handleResizeNodeApply } from '../../utils/ui-functions';
 import { addNode, addNodeToParent, dragNode, selectProperNodes } from '../../cytoscape-utils/node-functions';
 import { registerContextMenu } from '../../cytoscape-utils/cy-functions';
 import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functions';
-import { addEdgeClick } from '../../cytoscape-utils/edge-functions';
+import { edgeCreateDragOutOfElement, edgeCreateDragOverElement, edgeCreateStart, edgeCreateStop, edgeCreateValidate } from '../../cytoscape-utils/edge-functions';
+import { dispatch } from 'd3';
+import { removeNode } from '../../cytoscape-utils/removeEntity';
 
 var $ = require('jquery');
 const contextMenus = require('cytoscape-context-menus');
-let automove = require('cytoscape-automove');
+var edgeEditing = require('cytoscape-edge-editing');
 
 (window as any).$ = $;
 
+var konva = require('konva');
+contextMenus(cytoscape, $);
+//edgeEditing(cytoscape, $, konva);
+
 cytoscape.use(contextMenus);
 cytoscape.use(edgehandles);
-cytoscape.use(automove);
 
-contextMenus(cytoscape, $);
 
 let cy: Core;
 
@@ -55,7 +58,6 @@ const DiagramCanvas = ({
     doc
 } : DiagramCanvasProps) => {
 
-    
     const sharedNodes = doc.current.getMap('shared-nodes') as y.Map<NodeObject>;
     const sharedEdges = doc.current.getMap('shared-edges') as y.Map<EdgeObject>;
 
@@ -63,12 +65,15 @@ const DiagramCanvas = ({
     const addingPort = useRef<boolean>(false);
     const [ dialogOpen, setDialogOpen ] = useState<boolean>(false);
     const [ renameDialogOpen, setRenameDialogOpen ] = useState<boolean>(false);
+    const [ changePortFlowDialog, setChangePortFlowDialog ] = useState<boolean>(false);
     const [ nodeWidth, setNodeWidth ] = useState<number>(100);
     const [ nodeHeight, setNodeHeight ] = useState<number>(200);
     const [ nodeName1, setNodeName1 ] = useState<string>('');
     const [ nodeName2, setNodeName2 ] = useState<string>('');
     const [ resizingNode, setResizingNode ] = useState<null | string>(null);
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
+    const [ changePortFlowNode, setPortChangeFlowNode ] = useState<null | string>(null);
+    const [ changePortFlowValue, setPortChangeFlowValue ] = useState<null | string>(null);
 
     const resizeNode = (
             event: any,
@@ -80,6 +85,11 @@ const DiagramCanvas = ({
     const renameNode = (event: any) => {
         setRenamingNode(event.target.id());
         setRenameDialogOpen(true);
+    }
+
+    const changeFlow = (event: any) => {
+        setPortChangeFlowNode(event.target.id());
+        setChangePortFlowDialog(true);
     }
 
     const registerEventHandlers = (cy: Core, addNodeStatus: MutableRefObject<boolean>, addPortStatus: MutableRefObject<boolean>) => {
@@ -106,18 +116,47 @@ const DiagramCanvas = ({
         });
     };
 
+    const registerEdgeEventHandlers = (cy: Core) => {
+        let eh = cy.edgehandles(ehDefaults);
+
+    //edge creation events
+        cy.on('cxttapstart', 'node[type = "port"]', (evt: any) => {
+            edgeCreateStart(eh, evt);
+        });
+
+        cy.on('cxttapend', 'node[type = "node"], node[type = "portLabel"], node[type = "nodeLabel"]', (evt: any) => {
+            eh.stop();
+        });
+
+        cy.on('cxttapend', 'node[type = "port"]', (evt: any) => {
+            edgeCreateStop(eh, sharedEdges);
+        });
+      
+        cy.on('cxtdragover', 'node', (evt: any) => {
+            edgeCreateDragOverElement(evt);
+        });
+        
+        cy.on('cxtdragout', 'node', (evt: any) => {
+            edgeCreateDragOutOfElement(evt);
+        });
+    };
+
     useEffect(() => {
 
         sharedNodes.observeDeep(() => {
             cy.elements().remove();
+            console.log('som tu');
             cy.add(Array.from<NodeDefinition>(sharedNodes.values()));
             // maybe remove
+            //console.log(Array.from<EdgeDefinition>(sharedEdges.values()));
             cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
         });
 
         sharedEdges.observeDeep(() => {
-            cy.elements('edge').remove();
-            cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
+            cy.elements().remove();
+            cy.add(Array.from<NodeDefinition>(sharedNodes.values()));
+            const x = cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
+            console.log(x);
         });
         
         cy = cytoscape({
@@ -131,12 +170,15 @@ const DiagramCanvas = ({
             style: cytoscapestyles,
         });
 
+        cy.elements().remove();
+
 
         cy.layout(layoutOptions);
         cy.edgehandles(edgeOptions);
 
         registerEventHandlers(cy, addingNode, addingPort);
-        registerContextMenu(cy, resizeNode, renameNode);
+        registerEdgeEventHandlers(cy);
+        registerContextMenu(cy, doc, resizeNode, renameNode, removeNode, changeFlow);
     }, []);
 
     useEffect(() => {
@@ -181,9 +223,37 @@ const DiagramCanvas = ({
         setRenameDialogOpen(false);
     };
 
+    const handleChangeFlowPortClose = () => {
+        setChangePortFlowDialog(false);
+    }
+        
+
     return (
         <>
             <div>
+                
+                <Dialog open={changePortFlowDialog} onClose={handleChangeFlowPortClose}>
+                    <DialogTitle>Choose port flow</DialogTitle>
+                    <DialogContent>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡨')}}>🡨</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡪')}}>🡪</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡩')}}>🡩</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡫')}}>🡫</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⮂')}}>⮂</Button>
+                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⇵')}}>⇵</Button>
+                    </DialogContent>
+                    <DialogActions>
+                    <Button onClick={() => handlePortFlowChange(
+                        setChangePortFlowDialog,
+                        changePortFlowNode,
+                        sharedNodes,
+                        changePortFlowValue
+                    )}>Apply</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+            <div>
+
                 <Dialog open={dialogOpen} onClose={handleClose}>
                     <DialogTitle>Enter dimensions</DialogTitle>
                     <DialogContent>
@@ -292,13 +362,6 @@ const DiagramCanvas = ({
                                 <Crop32TwoToneIcon fontSize='large' color='primary'/>
                             </IconButton>
                         </Tooltip>
-
-                        <Tooltip title='Add edge' placement='right'>
-                            <IconButton onClick={() => addEdgeClick(sharedNodes, sharedEdges)}>
-                                <ArrowForwardTwoToneIcon fontSize='large' color='primary'  />
-                            </IconButton>
-                        </Tooltip>
-
                         
                         <Tooltip title='Add port' placement='right'>
                             <IconButton onClick={() => {addingPort.current = true;}}>

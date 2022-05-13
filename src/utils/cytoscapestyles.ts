@@ -25,6 +25,12 @@ export const cytoscapestyles = [
         }
     },
     {
+        selector: 'node[type = "port"]',
+        style: {
+            'padding': 10,
+        }
+    },
+    {
         selector: 'node[type = "portLabel"]',
         style: {
             'shape': 'rectangle',
@@ -41,7 +47,7 @@ export const cytoscapestyles = [
             'font-size': '30px',
             'width': 'data(width)',
             'height': 'data(height)',
-            'padding': 30,
+            'padding': 20,
         }
     },
     {
@@ -54,8 +60,8 @@ export const cytoscapestyles = [
     {
         selector: 'edge',
         style: {
-            'curve-style': 'bezier',
-            'arrow-scale': 1.5,
+            'curve-style': 'taxi',
+            'taxi-direction': 'horizontal',
         }
     },
 

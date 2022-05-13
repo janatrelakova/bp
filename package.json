@@ -16,6 +16,7 @@
     "cytoscape": "^3.21.1",
     "cytoscape-automove": "^1.10.3",
     "cytoscape-context-menus": "github:iVis-at-Bilkent/cytoscape.js-context-menus#unstable",
+    "cytoscape-edge-editing": "^4.0.0",
     "cytoscape-edgehandles": "^4.0.1",
     "cytoscape-node-editing": "^4.1.0",
     "d3": "^7.1.1",
