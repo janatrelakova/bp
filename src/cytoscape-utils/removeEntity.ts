@@ -5,6 +5,7 @@ import { cy } from '../components/DiagramPage/DiagramCanvas';
 import { EdgeObject } from '../interfaces/edge';
 import { NodeData, NodeObject, NodeType } from '../interfaces/node';
 import { PortData, PortLabelData } from '../interfaces/port';
+import { changeDimensions, moveNodeLabel } from './node-functions';
 
 
 const getNodes = (doc: React.MutableRefObject<y.Doc>) => {
@@ -24,12 +25,10 @@ export const removeNode = (
     const removed = sharedNodes.get(target);
 
     if (removed === undefined) {
-        console.log('was null');
         return;
     }
 
     const removedData = removed as NodeObject;
-    console.log(removedData);
 
     switch (removedData.data.type) {
         case NodeType.node: {
@@ -104,8 +103,11 @@ const removeAll = (object: NodeObject, doc: React.MutableRefObject<y.Doc>) => {
         removePort(port, doc);
     });
 
+    const parent = nodeData.parent;
+    const cyParent = cy.getElementById(parent!);
     // itself
     nodes.delete(objectId);
+    changeDimensions(parent, nodes);
 }
 
 const removePortLabel = (object: NodeObject, doc: React.MutableRefObject<y.Doc>) => {

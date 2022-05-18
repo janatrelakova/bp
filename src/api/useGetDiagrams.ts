@@ -11,7 +11,7 @@ export const useGetDiagrams = (id: string) : IDiagram[] => {
 
     useEffect(() => {
         async function getDiagramsByUser(id: string) {
-            const request = await fetch(`DiagramsPage/diagrams?userId=${id}`);
+            const request = await fetch(`/DiagramsPage/diagrams?userId=${id}`);
             const data = await request.json().catch(() => {});
             setInitialState(data);
         }

@@ -8,6 +8,7 @@ export const registerContextMenu = (
     renameNode: (event: any) => void,
     removeNode: (event: any, doc: React.MutableRefObject<y.Doc>) => void,
     changeFlow: (event: any, doc: React.MutableRefObject<y.Doc>) => void,
+    removeEdge: (event: any) => void,
     ) => {
     (cy as any).contextMenus({
         menuItems: [
@@ -38,6 +39,13 @@ export const registerContextMenu = (
                 tooltip: 'Change flow',
                 selector: 'node[type = "port"]',
                 onClickFunction: (e: any) => changeFlow(e, doc),
+            },
+            {
+                id: 'remove-edge',
+                content: 'Remove',
+                tooltip: 'Remove Edge',
+                selector: 'edge',
+                onClickFunction: (e: any) => removeEdge(e),
             }
         ],
         submenuIndicator: { src: '../arrow.svg', width: 12, height: 12 }

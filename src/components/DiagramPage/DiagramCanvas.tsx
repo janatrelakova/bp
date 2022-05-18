@@ -1,11 +1,12 @@
 import * as React from 'react';
-import cytoscape, { Core, EdgeDefinition, NodeDefinition, NodeSingular, Position } from 'cytoscape';
+import cytoscape, { CollectionReturnValue, Core, EdgeDefinition, NodeDefinition, NodeSingular, Position } from 'cytoscape';
 import edgehandles from 'cytoscape-edgehandles';
 
 import * as y from 'yjs';
-import { useEffect, useRef, MutableRefObject, useState } from 'react';
+import { useEffect, useRef, MutableRefObject, useState, useCallback } from 'react';
 import { cytoscapestyles } from '../../utils/cytoscapestyles';
 import './DiagramCanvas.css';
+import { v4 as uuidv4 } from 'uuid';
 
 import Crop32TwoToneIcon from '@mui/icons-material/Crop32TwoTone';
 import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
@@ -20,8 +21,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MouseIcon from '@mui/icons-material/Mouse';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { EdgeObject } from '../../interfaces/edge';
 import { NodeObject, NodeType } from '../../interfaces/node';
 import { layoutOptions } from '../../cytoscape-utils/layoutOptions';
@@ -33,6 +36,7 @@ import { addPort, dragLabel, dragPort } from '../../cytoscape-utils/port-functio
 import { edgeCreateDragOutOfElement, edgeCreateDragOverElement, edgeCreateStart, edgeCreateStop, edgeCreateValidate } from '../../cytoscape-utils/edge-functions';
 import { dispatch } from 'd3';
 import { removeNode } from '../../cytoscape-utils/removeEntity';
+import ChangeFlowComponent from './ChangeFlowComponent';
 
 var $ = require('jquery');
 const contextMenus = require('cytoscape-context-menus');
@@ -55,6 +59,8 @@ const DiagramCanvas = ({
     doc
 } : DiagramCanvasProps) => {
 
+    const { id } = useParams();
+
     const sharedNodes = doc.current.getMap('shared-nodes') as y.Map<NodeObject>;
     const sharedEdges = doc.current.getMap('shared-edges') as y.Map<EdgeObject>;
 
@@ -70,7 +76,6 @@ const DiagramCanvas = ({
     const [ resizingNode, setResizingNode ] = useState<null | string>(null);
     const [ renamingNode, setRenamingNode ] = useState<null | string>(null);
     const [ changePortFlowNode, setPortChangeFlowNode ] = useState<null | string>(null);
-    const [ changePortFlowValue, setPortChangeFlowValue ] = useState<null | string>(null);
 
     const resizeNode = (
             event: any,
@@ -89,6 +94,11 @@ const DiagramCanvas = ({
         setChangePortFlowDialog(true);
     }
 
+    const removeEdge = (event: any) => {
+        const edgeId = event.target.id();
+        sharedEdges.delete(edgeId);
+    }
+
     const registerEventHandlers = (cy: Core, addNodeStatus: MutableRefObject<boolean>, addPortStatus: MutableRefObject<boolean>) => {
 
         cy.on('tap', function(event) {
@@ -105,10 +115,6 @@ const DiagramCanvas = ({
                     addPort(event.position, event.target, sharedNodes);
                 }
                 addPortStatus.current = false;
-            } else {
-                if (event.target.isNode) {
-                    selectProperNodes(event.target, sharedNodes);
-                }
             }
         });
     };
@@ -116,7 +122,6 @@ const DiagramCanvas = ({
     const registerEdgeEventHandlers = (cy: Core) => {
         let eh = cy.edgehandles(ehDefaults);
 
-    //edge creation events
         cy.on('cxttapstart', 'node[type = "port"]', (evt: any) => {
             edgeCreateStart(eh, evt);
         });
@@ -142,18 +147,14 @@ const DiagramCanvas = ({
 
         sharedNodes.observeDeep(() => {
             cy.elements().remove();
-            console.log('som tu');
             cy.add(Array.from<NodeDefinition>(sharedNodes.values()));
-            // maybe remove
-            //console.log(Array.from<EdgeDefinition>(sharedEdges.values()));
             cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
         });
 
         sharedEdges.observeDeep(() => {
             cy.elements().remove();
             cy.add(Array.from<NodeDefinition>(sharedNodes.values()));
-            const x = cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
-            console.log(x);
+            cy.add(Array.from<EdgeDefinition>(sharedEdges.values()));
         });
         
         cy = cytoscape({
@@ -175,7 +176,7 @@ const DiagramCanvas = ({
 
         registerEventHandlers(cy, addingNode, addingPort);
         registerEdgeEventHandlers(cy);
-        registerContextMenu(cy, doc, resizeNode, renameNode, removeNode, changeFlow);
+        registerContextMenu(cy, doc, resizeNode, renameNode, removeNode, changeFlow, removeEdge);
     }, []);
 
     useEffect(() => {
@@ -209,8 +210,46 @@ const DiagramCanvas = ({
     const clearData = () => {
         sharedEdges.clear();
         sharedNodes.clear();
-        console.log('cleared.');
     };
+
+    const loadDiagram = useCallback(() => {
+        fetch(`https://localhost:5001/Diagram/diagram?room=${id}`, {
+            method: "GET",
+            headers: {'Content-Type': 'application/json'},
+        }).then((res) => {
+            alert("loaded!");
+            return res.text();
+        }).then((res) => {
+            var parsed = JSON.parse(res);
+            var nodes = parsed["sharedNodes"];
+            var edges = parsed["sharedEdges"];
+            Object.entries(nodes).forEach((entry) => {
+                const [key, value] = entry; 
+                sharedNodes.set(key, value as NodeObject);
+              });
+            Object.entries(edges).forEach((entry) => {
+            const [key, value] = entry; 
+            sharedEdges.set(key, value as EdgeObject);
+            });
+        })
+        .catch((err) => console.error(err))
+    }, [id]);
+
+    const saveDiagram = useCallback(() => {
+        fetch(`https://localhost:5001/Diagram/diagram`, {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                id: uuidv4(),
+                room: id,
+                data: JSON.stringify({
+                    sharedNodes, sharedEdges
+                })
+            })
+        }).then((x) => {
+            alert("Saved!");
+        }).catch((err) => console.error(err))
+    }, [id]);
 
     const handleClose = () => {
         setDialogOpen(false);
@@ -228,25 +267,11 @@ const DiagramCanvas = ({
     return (
         <>
             <div>
-                
                 <Dialog open={changePortFlowDialog} onClose={handleChangeFlowPortClose}>
-                    <DialogTitle>Choose port flow</DialogTitle>
-                    <DialogContent>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡨')}}>🡨</Button>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡪')}}>🡪</Button>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡩')}}>🡩</Button>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('🡫')}}>🡫</Button>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⮂')}}>⮂</Button>
-                    <Button variant="outlined" onClick={()=>{setPortChangeFlowValue('⇵')}}>⇵</Button>
-                    </DialogContent>
-                    <DialogActions>
-                    <Button onClick={() => handlePortFlowChange(
-                        setChangePortFlowDialog,
-                        changePortFlowNode,
-                        sharedNodes,
-                        changePortFlowValue
-                    )}>Apply</Button>
-                    </DialogActions>
+                    <ChangeFlowComponent 
+                        setDialog={handleChangeFlowPortClose} 
+                        portId={changePortFlowNode!} 
+                        sharedNodes={sharedNodes}/>
                 </Dialog>
             </div>
             <div>
@@ -330,7 +355,7 @@ const DiagramCanvas = ({
             <div className='diagram'>
 
                 <div className='diagram__header'>
-                    <span className='header__title'>IbdDiagram</span>
+                    <span className='header__title'>{id}</span>
                     <div className='header__icons'>
                         <Link to={`/`}>
                             <HomeOutlinedIcon fontSize='large' color='primary'/>
@@ -369,6 +394,16 @@ const DiagramCanvas = ({
                         <Tooltip title='Clear data' placement='right'>
                             <IconButton onClick={clearData}>
                                 <DeleteForeverTwoToneIcon fontSize='large' color='primary' />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title='Load diagram' placement='right'>
+                            <IconButton onClick={loadDiagram}>
+                                <FileDownloadIcon fontSize='large' color='primary' />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title='Import diagram' placement='right'>
+                            <IconButton onClick={saveDiagram}>
+                                <FileDownloadIcon fontSize='large' color='primary' />
                             </IconButton>
                         </Tooltip>
                     </div>

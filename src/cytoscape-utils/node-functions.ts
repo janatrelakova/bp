@@ -107,7 +107,6 @@ export const changeDimensions = (
 
     const affectedNode = sharedNodes.get(nodeId);
     if (affectedNode === undefined) {
-        console.log('Affected node is null, when changing dimensions');
         return;
     }
     const affectedNodeData = affectedNode.data as NodeData;
@@ -134,7 +133,6 @@ export const getChildrenMaxDimensions: ((
 ) => DimensionsType) = (nodeId, sharedNodes) => {
     const node = sharedNodes.get(nodeId);
     if (node === undefined) {
-        console.log('Node not found.');
         return {
             horizontal: Infinity,
             vertical: Infinity,
@@ -147,7 +145,10 @@ export const getChildrenMaxDimensions: ((
     const children: (NodeObject | undefined)[] = directChildren.map(cid => sharedNodes.get(cid));
 
     if (children.length === 0) { 
-        return nodeData.dimensions;
+        return {
+            horizontal: nodeData.width / 2,
+            vertical: nodeData.height / 2,
+        };
     }
 
     const center = cyNode.position();
@@ -184,16 +185,14 @@ export const dragNode = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
     moveNodeLabel(node.data.id, sharedNodes);
 };
 
-const moveNodeLabel = (nodeId: string, sharedNodes: y.Map<NodeObject>) => {
+export const moveNodeLabel = (nodeId: string, sharedNodes: y.Map<NodeObject>) => {
     const node = sharedNodes.get(nodeId);
     if (node === undefined) {
-        console.log('When moving, parent was undeinfed.');
         return;
     }
 
     const labelNode = sharedNodes.get(nodeId + '-label');
     if (labelNode === undefined) {
-        console.log('When moving, label was undeinfed.');
         return;
     }
 
@@ -220,11 +219,14 @@ export const selectProperNodes = (target: any, sharedNodes: y.Map<NodeObject>) =
         return;
     }
 
+    let p = null;
+
     if (node.data.type === NodeType.node) {
-        cy.getElementById(nodeId + '-label').style('border-color', 'yellow');
+        p  = cy.getElementById(nodeId + '-label').style('border-color', 'blue');
 
     } else if (node.data.type === NodeType.nodeLabel) {
-        cy.getElementById(nodeId.split(0, -6)).first().select();
+        p = cy.getElementById(nodeId.split(0, -6)).style('border-color', 'blue');
     }
-    
+
+    return p;
 }

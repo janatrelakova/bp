@@ -4,6 +4,7 @@ import { EdgeObject } from "../interfaces/edge";
 import { cy } from '../components/DiagramPage/DiagramCanvas';
 import { NodeSingular } from "cytoscape";
 import { NodeObject, NodeType } from '../interfaces/node';
+import { PortData } from '../interfaces/port';
 
 
 //global endpoints, set or unset by following functions
@@ -33,14 +34,25 @@ export const edgeCreateStop = (eh: any, sharedEdges: y.Map<EdgeObject>) => {
     }
 
     const t = targetNode as unknown as NodeSingular;
-    if (t.data().type != NodeType.port) {
+    const targetData = t.data();
+    if (targetData.type != NodeType.port) {
         sourceNode = null;
         targetNode = null;
         return;
     }
 
+
     if (sourceNode.edges().length > 0) {
         return;
+    }   
+    
+    
+    const portData = targetData as PortData;
+    let direction;
+    if (portData.situatedOn === 'left' || portData.situatedOn === 'right') {
+        direction = 'horizontal';
+    } else {
+        direction = 'vertical';
     }
 
     const addedEdge = {
@@ -48,6 +60,7 @@ export const edgeCreateStop = (eh: any, sharedEdges: y.Map<EdgeObject>) => {
             source: sourceNode.id(),
             target: targetNode.id(),
             id: id,
+            direction: direction,
         },
     };
 
