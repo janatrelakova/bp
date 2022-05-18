@@ -6,7 +6,7 @@
 - These services are up and running
 - The following commands will start the front-end
   - ```git clone <This repo>```
-  - ````cd bp``` 
+  - ```cd bp``` 
   -  ```npm i```
   -  ```npm start```
 
