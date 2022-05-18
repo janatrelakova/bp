@@ -40,11 +40,8 @@ import ChangeFlowComponent from './ChangeFlowComponent';
 
 var $ = require('jquery');
 const contextMenus = require('cytoscape-context-menus');
-var edgeEditing = require('cytoscape-edge-editing');
 
 (window as any).$ = $;
-
-var konva = require('konva');
 contextMenus(cytoscape, $);
 //edgeEditing(cytoscape, $, konva);
 
