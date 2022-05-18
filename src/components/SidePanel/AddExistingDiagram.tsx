@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } 
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { useParams } from 'react-router';
-import './AddDiagramComponent.css';
+import './AddDiagram.css';
 
 const AddExistingDiagram = () => {
     const [ openDialog, setOpenDialog ] = useState<boolean>(false);
