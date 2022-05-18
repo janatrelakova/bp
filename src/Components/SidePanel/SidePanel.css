@@ -1,5 +1,8 @@
 .panel {
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
     flex: 2;
+    align-items: center;
     background-color: rgb(127, 178, 255);
 }

@@ -1,0 +1,18 @@
+.welcome-page {
+    display: flex;
+    flex-direction: column;
+    padding: 10rem;
+}
+
+.welcome-page__title {
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 5rem;
+    padding-bottom: 0rem;
+}
+
+.welcome-page__subtitle {
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 2rem;
+}

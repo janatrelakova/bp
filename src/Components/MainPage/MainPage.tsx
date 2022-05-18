@@ -1,12 +1,12 @@
 import * as React from 'react';
 import DiagramsGrid from './DiagramsGrid';
 import './MainPage.css';
-import Search from './Search';
+import Header from './Header';
 
 const MainPage = () => {
     return (
         <div className="main">
-            <Search />
+            <Header />
             <DiagramsGrid />
         </div>
     );

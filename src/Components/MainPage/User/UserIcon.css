@@ -1,0 +1,15 @@
+.user-container {
+    height: 0;
+    padding-bottom: 7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+}
+
+.user-container:hover {
+    background-color: lightgrey;
+}

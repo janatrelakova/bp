@@ -8,13 +8,11 @@ import { cy, padding } from "../components/DiagramPage/DiagramCanvas";
 export const addPort = (initialPosition: Position, targetNode: any, sharedNodes: y.Map<NodeObject>) => {
     const temporaryTarget = sharedNodes.get(targetNode.id());
     if (temporaryTarget === undefined) {
-        console.log('Target node not found.')
         return;
     };
 
     const objectType = temporaryTarget.data.type;
     if (objectType === NodeType.portLabel || objectType === NodeType.port) {
-        console.log('Cannot add port to another instance');
         return;
     }
 
@@ -24,7 +22,6 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
         const nodeTarget = temporaryTarget.data.id.slice(0, -6);
         target = sharedNodes.get(nodeTarget);
         if (target === undefined) {
-            console.log('Node of label not found.');
             return;
         }
     }
@@ -101,7 +98,6 @@ export const addPort = (initialPosition: Position, targetNode: any, sharedNodes:
 
     const nodeToUpdate = sharedNodes.get(target.data.id);
     if (nodeToUpdate === undefined) {
-        console.log("BIG ERROR");
         return;
     };
 
@@ -125,7 +121,6 @@ const setPortLocation : ((portX: number, portY: number, targetNode: any) => dime
     targetNode: NodeObject | undefined,
 ) => {
     if (targetNode === undefined) {
-        console.log('Target was undefined.');
         return dimensionType.bottom;
     }
 
@@ -191,7 +186,6 @@ export const moveNodePorts: ((
     ports.forEach(portId => {
         const portNode = sharedNodes.get(portId);
         if (portNode === undefined) {
-            console.log(`Could not find port with ${portId} id`);
             return;
         }
         const targetData = target.data as NodeData;
@@ -288,7 +282,6 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     const node = sharedNodes.get(portData.portOf.toString());
 
     if (node === undefined) {
-        console.log('Node was not found.');
         return;
     }
 
@@ -309,7 +302,6 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
     const cyPortReturnValue = cy.getElementById(portData.id);
 
     if (cyPortReturnValue.length === 0) {
-        console.log('No port found on cy.');
         return;
     }
     const cyPort = cyPortReturnValue.first() as NodeSingular;
@@ -346,7 +338,6 @@ export const dragPort : ((port: NodeObject, sharedNodes: y.Map<NodeObject>) => v
 const moveLabel = (labelId: string, portPosition: Position, sharedNodes: y.Map<NodeObject>) => {
     const labelNode = sharedNodes.get(labelId);
     if (labelNode === undefined) {
-        console.log('Label not found.')
         return;
     }
 
@@ -365,13 +356,11 @@ export const dragLabel = (label: NodeObject, sharedNodes: y.Map<NodeObject>) => 
     const portId = labelData.labelOf;
     const port = sharedNodes.get(portId);
     if (port === undefined) {
-        console.log('Port not found.');
         return;
     }
 
     const cyLabelReturnValue = cy.getElementById(labelData.id);
     if (cyLabelReturnValue.length === 0) {
-        console.log('Label node not found.');
         return;
     }
     const cyLabel = cyLabelReturnValue.first() as NodeSingular;
@@ -381,8 +370,8 @@ export const dragLabel = (label: NodeObject, sharedNodes: y.Map<NodeObject>) => 
     const portCenter = port.position;
     const portWidth = portData.width;
 
-    const acceptedXDiff = portWidth * 5;
-    const acceptedYDiff = portWidth * 5;
+    const acceptedXDiff = portWidth * 7;
+    const acceptedYDiff = portWidth * 7;
 
     if (cyLabelPosition.x < portCenter.x - acceptedXDiff) {
         cyLabel.position('x', portCenter.x - acceptedXDiff);
@@ -394,6 +383,11 @@ export const dragLabel = (label: NodeObject, sharedNodes: y.Map<NodeObject>) => 
         cyLabel.position('y', portCenter.y - acceptedYDiff);
     } else if (cyLabelPosition.y > portCenter.y + acceptedYDiff) {
         cyLabel.position('y', portCenter.y + acceptedYDiff);
+    }
+
+    labelData.diffFromNode = {
+        x: cyLabel.position().x - portCenter.x,
+        y: cyLabel.position().y - portCenter.y,
     }
     
 

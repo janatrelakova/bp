@@ -1,12 +1,16 @@
 import { Grid } from '@mui/material';
 import * as React from 'react';
+import { useParams } from 'react-router-dom';
 import { IDiagram, useGetDiagrams } from '../../api/useGetDiagrams';
 import DiagramIcon from './Diagram/DiagramIcon';
 import './DiagramsGrid.css';
 
+
+
 const DiagramsGrid = () => {
     //const diagrams = ['aadsfa', 'adfab', 'cafadf', 'dafadf', 'e', 'adfafa', 'b', 'cadfa', 'd', 'e', 'a', 'b', 'c', 'd', 'e'];
-    const i = useGetDiagrams('1b77295b-e86c-45d0-9718-ac88f0cdfc4f');
+    const { id } = useParams();
+    const i = useGetDiagrams(id ?? 'ahoj');
     const diagrams: IDiagram[] = [];
 
     if (i == null) {

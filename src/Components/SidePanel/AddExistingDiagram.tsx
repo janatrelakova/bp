@@ -4,14 +4,13 @@ import { useCallback, useState } from 'react';
 import { useParams } from 'react-router';
 import './AddDiagramComponent.css';
 
-
-const AddDiagramComponent = () => {
+const AddExistingDiagram = () => {
     const [ openDialog, setOpenDialog ] = useState<boolean>(false);
     const [ roomName, setRoomName ] = useState<string>("");
     const { id } = useParams();
 
     const createDiagram = useCallback(() => {
-        fetch("https://localhost:5001/DiagramsPage/new", {
+        fetch("https://localhost:5001/DiagramsPage/connect", {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -19,7 +18,7 @@ const AddDiagramComponent = () => {
                 room: roomName,
             })
         }).then(() => {
-            alert("Created!");
+            alert("Connected!");
             window.location.href = `/DiagramsPage/diagrams/${id}`;
         }).catch((err) => console.error(err))
     }, [roomName]);
@@ -54,10 +53,10 @@ const AddDiagramComponent = () => {
             <div className="holder">
                 <Button 
                     variant="contained" 
-                    color="primary"
+                    color="success"
                     size="small"
                     onClick={() => setOpenDialog(true)}>
-                        Internal Block Diagram
+                        Add existing Diagram
                 </Button>                   
             </div>
 
@@ -65,4 +64,4 @@ const AddDiagramComponent = () => {
     );
 }
 
-export default AddDiagramComponent;
+export default AddExistingDiagram;

@@ -37,7 +37,7 @@ export const cytoscapestyles = [
             'border-color': 'white',
             'width': 'data(width)',
             'height': 'data(height)',
-            'padding': 30,
+            'padding': 10,
         }
     },
     {
@@ -61,7 +61,7 @@ export const cytoscapestyles = [
         selector: 'edge',
         style: {
             'curve-style': 'taxi',
-            'taxi-direction': 'horizontal',
+            'taxi-direction': 'data(direction)',
         }
     },
 
