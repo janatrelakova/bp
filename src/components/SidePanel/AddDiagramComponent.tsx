@@ -10,7 +10,7 @@ const AddDiagramComponent = () => {
     const { id } = useParams();
 
     const createDiagram = useCallback(() => {
-        fetch("https://localhost:5001/DiagramsPage/new", {
+        fetch("/DiagramsPage/new", {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

@@ -213,7 +213,7 @@ const DiagramCanvas = ({
     };
 
     const loadDiagram = useCallback(() => {
-        fetch(`https://localhost:5001/Diagram/diagram?room=${id}`, {
+        fetch(`/Diagram/diagram?room=${id}`, {
             method: "GET",
             headers: {'Content-Type': 'application/json'},
         }).then((res) => {
@@ -236,7 +236,7 @@ const DiagramCanvas = ({
     }, [id]);
 
     const saveDiagram = useCallback(() => {
-        fetch(`https://localhost:5001/Diagram/diagram`, {
+        fetch(`Diagram/diagram`, {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -398,10 +398,10 @@ const DiagramCanvas = ({
                         </Tooltip>
                         <Tooltip title='Load diagram' placement='right'>
                             <IconButton onClick={loadDiagram}>
-                                <FileDownloadIcon fontSize='large' color='primary' />
+                                <FileUploadIcon fontSize='large' color='primary' />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title='Import diagram' placement='right'>
+                        <Tooltip title='Save diagram' placement='right'>
                             <IconButton onClick={saveDiagram}>
                                 <FileDownloadIcon fontSize='large' color='primary' />
                             </IconButton>

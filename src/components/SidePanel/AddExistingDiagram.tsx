@@ -10,7 +10,7 @@ const AddExistingDiagram = () => {
     const { id } = useParams();
 
     const createDiagram = useCallback(() => {
-        fetch("https://localhost:5001/DiagramsPage/connect", {
+        fetch("/DiagramsPage/connect", {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

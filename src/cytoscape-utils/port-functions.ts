@@ -231,7 +231,7 @@ const addPortLabel: ((portId: string, position: Position, location: dimensionTyp
     const labelId = uuidv4();
     const diff = 60;
     let diffX = 0, diffY = 0;
-    const labelText = 'portLabel';
+    const labelText = 'Flow : Data';
 
     switch (location) {
         case dimensionType.left: {

@@ -9,10 +9,11 @@ import { moveNodePorts } from "./port-functions";
 const addNodeLabel = (node: NodeObject, sharedNodes: y.Map<NodeObject>) => {
     const nodeData = node.data as NodeData;
     const id = node.data.id + '-label';
+    const length = sharedNodes.size;
     const addedLabel = {
         data: {
             id: id,
-            label: 'obj : object',
+            label: `${(length + 1) / 2} : Block`,
             width: node.data.width,
             height: 10,
             parent: nodeData.parent,

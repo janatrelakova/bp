@@ -13,12 +13,10 @@ export const handleRenameNodeApply = (
     ) => {
     setter(false);
     if (affectedNodeId === null) {
-        console.log('Something went really wrong.');
         return;
     }
     let renamed = sharedNodes.get(affectedNodeId);
     if (renamed === undefined) {
-        console.log('Something went really wrong. --- undefined');
         return;
     }
 
@@ -26,14 +24,12 @@ export const handleRenameNodeApply = (
         const portData = renamed.data as PortData;
         renamed = sharedNodes.get(portData.labelId);
         if (renamed === undefined) {
-            console.log('Something went really wrong. --- undefined');
             return;
         }
     } else if (renamed.data.type === NodeType.node) {
         const id = affectedNodeId + '-label';
         renamed = sharedNodes.get(id);
         if (renamed === undefined) {
-            console.log('Something went really wrong. --- undefined');
             return;
         }
     }
@@ -51,12 +47,10 @@ export const handleResizeNodeApply = (
 ) => {
     setter(false);
     if (affectedNodeId === null) {
-        console.log('Something went really wrong.');
         return;
     }
     const resized = sharedNodes.get(affectedNodeId);
     if (resized === undefined) {
-        console.log('Something went really wrong. --- undefined');
         return;
     }
 
