@@ -12,6 +12,7 @@
 
 ## How to run locally?
 - Run back-end (c# project)
+  - ```dotnet run --project InitDAL`` to create database with seeded data 
   - ```dotnet run --project API```
 - Run signaling server
   - ```node src/server.js``` 
